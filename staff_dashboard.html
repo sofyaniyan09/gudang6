@@ -1,0 +1,153 @@
+<!DOCTYPE html><html lang="en" class="dark" style="background-color: #10131b;"><head>\n  <!-- Sidebar State Initialization -->
+<script>
+  (function() {
+    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+      document.documentElement.classList.add('sidebar-collapsed');
+    }
+  })();
+</script>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Inventaris Gudang 6 - Dashboard Staf</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+
+
+
+<script type="module">
+  import { requireAuth } from './src/auth.js';
+  requireAuth();
+</script>
+    <link rel="stylesheet" href="/assets/tailwind.css"/>
+</head>
+<body class="bg-background text-on-background flex flex-col md:flex-row min-h-screen" style="background-color: #10131b; color: #e0e2ed;">
+
+<!-- SideNavBar (Desktop) -->
+
+<div id="main-content" class="flex-1 flex flex-col md:ml-64 relative min-w-0 content-wrapper h-screen">
+  <main class="flex-1 overflow-y-auto flex flex-col pb-20 md:pb-0 min-w-0">
+  <!-- Page Header Configuration for SPA -->
+  <div id="page-header-config" class="hidden">
+    <div class="page-title">Overview</div>
+    <div class="left-actions"></div>
+    <div class="right-actions"><!-- No specific right actions --></div>
+  </div>
+
+<div class="py-lg w-full max-w-[1280px] mx-auto">
+<!-- Header Section (Page specific) -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-xl gap-4 hidden md:flex">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface">Overview</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Real-time maritime logistics tracking and user statistics.</p>
+</div>
+<div class="flex gap-sm">
+  <input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden">
+  <button id="btn-upload-excel" class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg shadow-sm hover:opacity-90 transition-opacity flex items-center gap-2">
+  <span class="material-symbols-outlined text-sm">upload</span> Upload File
+</button>
+
+
+</div>
+</div>
+<!-- Dashboard Content Grid (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 w-full">
+<!-- Stat Card: Ships/Files -->
+<div class="glass-card rounded-xl p-lg flex flex-col justify-between md:col-span-4 lg:col-span-3">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-blue-50 rounded-lg text-primary">
+<span class="material-symbols-outlined text-2xl icon-filled">directions_boat</span>
+</div>
+<span class="px-2 py-1 bg-green-50 text-green-700 font-label-sm text-label-sm rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Active
+            </span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-1 uppercase tracking-wider">Total Ships Monitored</p>
+<h3 class="font-display-lg text-display-lg text-on-surface"><span id="total-ships-count">14</span></h3>
+</div>
+<div class="mt-4 pt-4 border-t border-surface-variant/50 flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm">
+<span class="">1 File = 1 Kapal</span>
+<a class="text-primary hover:underline flex items-center" href="kelola_kapal.html">View List <span class="material-symbols-outlined text-[14px]">chevron_right</span></a>
+</div>
+</div>
+<!-- Stat Card: Active Users -->
+<div class="glass-card rounded-xl p-lg flex flex-col justify-between md:col-span-4 lg:col-span-3">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-purple-50 rounded-lg text-tertiary">
+<span class="material-symbols-outlined text-2xl icon-filled">group</span>
+</div>
+<span class="px-2 py-1 bg-blue-50 text-blue-700 font-label-sm text-label-sm rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> Online
+            </span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-1 uppercase tracking-wider">Active Users</p>
+<h3 class="font-display-lg text-display-lg text-on-surface"><span id="active-users-count">128</span></h3>
+</div>
+<div class="mt-4 pt-4 border-t border-surface-variant/50 flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm">
+<span class="">+12 this week</span>
+<a class="text-primary hover:underline flex items-center" href="#">Manage <span class="material-symbols-outlined text-[14px]">chevron_right</span></a>
+</div>
+</div>
+<!-- Progress/Chart Card: Container Update Progress -->
+<div class="glass-card rounded-xl p-lg md:col-span-4 lg:col-span-6 flex flex-col lg:flex-row items-center gap-6 relative overflow-hidden">
+<!-- Subtle background decoration -->
+<div class="absolute -right-10 -bottom-10 w-40 h-40 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
+<div class="w-full lg:w-1/2">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1 uppercase tracking-wider">Ongoing Operation</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Container Data Update</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Tracking the synchronization of physical inventory across the active fleet.</p>
+<div class="flex items-center gap-4">
+<button class="bg-primary/10 text-primary font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors">
+                View Details
+              </button>
+</div>
+</div>
+<div class="w-full lg:w-1/2 flex flex-col justify-end relative h-40">
+<div class="flex justify-between items-end h-full w-full gap-2 border-b border-surface-variant pb-1" id="daily-completion-chart">
+  <!-- Bars will be injected by JS -->
+  <div class="flex items-center justify-center h-full w-full text-on-surface-variant animate-pulse">
+    Menghitung data mingguan...
+  </div>
+</div>
+</div>
+</div>
+<!-- Recent Activity/Ships List (Span full width on mobile, 12 cols desktop) -->
+<div class="glass-card rounded-xl w-full md:col-span-12 overflow-hidden mt-2">
+<div class="p-lg border-b border-surface-variant/50 flex justify-between items-center bg-surface/50">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">sync</span> Ongoing Container Updates
+            </h3>
+<button class="text-primary font-label-md text-label-md hover:underline">See All</button>
+</div>
+<div class="flex flex-col" id="ongoing-updates-list">
+  <div class="p-8 text-center text-on-surface-variant flex flex-col items-center">
+    <span class="material-symbols-outlined text-4xl mb-2 animate-spin">sync</span>
+    Memuat data kontainer...
+  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+<!-- Decorative Floating Action Button (Mobile Contextual - Only if needed, suppressed per instructions for general dashboard, but keeping a subtle hint if required by future logic. Omitted here for cleaner dashboard canvas as per standard iOS style unless specific action is paramount). -->
+<!-- Removed FAB to maintain clean bento canvas -->
+
+<script type="module" src="/src/upload.js"></script>
+<script type="module" src="/src/dashboard.js"></script>
+<script type="module" src="/src/staffDashboard.js"></script>
+
+<script type="module">
+  import { logout } from './src/auth.js';
+  document.getElementById('btn-logout')?.addEventListener('click', () => {
+    logout();
+  });
+</script>
+
+
+
+  <script type="module" src="/src/components/Navigation.js"></script>
+</body></html>

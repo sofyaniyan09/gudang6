@@ -1,0 +1,165 @@
+<!DOCTYPE html><html lang="en" class="dark" style="background-color: #10131b;"><head>
+  <!-- Sidebar State Initialization -->
+<script>
+  (function() {
+    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+      document.documentElement.classList.add('sidebar-collapsed');
+    }
+  })();
+</script>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Inventaris Gudang 6 - Dashboard Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+
+<script type="module">
+  import { requireAuth } from './src/auth.js';
+  requireAuth();
+</script>
+    <link rel="stylesheet" href="/assets/tailwind.css"/>
+</head>
+<body class="bg-background text-on-background flex flex-col md:flex-row min-h-screen" style="background-color: #10131b; color: #e0e2ed;">
+
+<!-- SideNavBar (Desktop) -->
+
+<div id="main-content" class="flex-1 flex flex-col md:ml-64 relative min-w-0 content-wrapper h-screen">
+  <!-- TopAppBar (Floating) -->
+  
+  <main class="flex-1 overflow-y-auto flex flex-col pb-20 md:pb-0 min-w-0">
+
+  <style>
+    /* Custom responsive grid fix */
+    .responsive-card { grid-column: span 1; }
+    @media (min-width: 768px) {
+      .responsive-grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+      }
+      .desktop-col-3 { grid-column: span 3 !important; }
+      .desktop-col-4 { grid-column: span 4 !important; }
+      .desktop-col-5 { grid-column: span 5 !important; }
+      .desktop-col-6 { grid-column: span 6 !important; }
+      .desktop-col-7 { grid-column: span 7 !important; }
+      .desktop-col-12 { grid-column: span 12 !important; }
+    }
+  </style>
+  <!-- Page Header Configuration for SPA -->
+  <div id="page-header-config" class="hidden">
+    <div class="page-title"><span id="main-title-text">CC Penerimaan Material</span></div>
+    <div class="left-actions"></div>
+    <div class="right-actions"><!-- No specific right actions --></div>
+  </div>
+
+  <div class="pb-lg pt-6 lg:pt-8 w-full max-w-[1536px] px-4 md:px-6 mx-auto">
+    <!-- Dashboard Content Grid (Bento Style) -->
+    <div class="grid grid-cols-1 gap-6 w-full responsive-grid">
+<!-- Stat Card: Ships/Files -->
+<div class="glass-card rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group border border-white/5 bg-surface-container-lowest/10 responsive-card desktop-col-3">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-widest">Total Ships</p>
+<h3 class="text-3xl font-semibold text-on-surface"><span id="total-ships-count">14</span></h3>
+</div>
+<div class="flex justify-between items-end mt-8 mb-2">
+<div class="w-12 h-12 flex items-center justify-center bg-secondary-container/20 rounded-full text-secondary">
+<span class="material-symbols-outlined text-[20px] icon-filled">directions_boat</span>
+</div>
+<span class="px-3 py-1 bg-green-500/10 text-green-500 font-label-sm text-label-sm rounded-full flex items-center gap-1.5 border border-green-500/20">
+<span class="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_4px_#22c55e]"></span> Active
+</span>
+</div>
+<div class="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm">
+<span class="">1 File = 1 Kapal</span>
+<a class="text-secondary hover:text-primary transition-colors flex items-center gap-1" href="kelola_kapal.html">View List <span class="material-symbols-outlined text-[16px]">chevron_right</span></a>
+</div>
+</div>
+<!-- Stat Card: Active Users -->
+<div class="glass-card rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group border border-white/5 bg-surface-container-lowest/10 responsive-card desktop-col-3">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-widest">Active Users</p>
+<h3 class="text-3xl font-semibold text-on-surface"><span id="active-users-count">128</span></h3>
+</div>
+<div class="flex justify-between items-end mt-8 mb-2">
+<div class="w-12 h-12 flex items-center justify-center bg-tertiary-container/20 rounded-full text-tertiary">
+<span class="material-symbols-outlined text-[20px] icon-filled">group</span>
+</div>
+<span class="px-3 py-1 bg-blue-500/10 text-blue-500 font-label-sm text-label-sm rounded-full flex items-center gap-1.5 border border-blue-500/20">
+<span class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_4px_#3b82f6]"></span> Online
+</span>
+</div>
+<div class="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm">
+<span class="">+12 this week</span>
+<a class="text-secondary hover:text-primary transition-colors flex items-center gap-1" href="#">Manage <span class="material-symbols-outlined text-[16px]">chevron_right</span></a>
+</div>
+</div>
+<!-- Progress/Chart Card: Container Update Progress -->
+<div class="glass-card rounded-3xl p-5 flex flex-col relative overflow-hidden border border-white/5 bg-surface-container-lowest/10 responsive-card desktop-col-6 w-full">
+  <div>
+    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-6">Grafik Update</p>
+  </div>
+  <div class="grid grid-cols-1 gap-4 responsive-grid">
+    <!-- Subtle background decoration -->
+    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
+
+    <!-- Left: Pie Chart (Distribusi Kontainer) -->
+    <div class="flex flex-col justify-center items-center min-w-0 relative responsive-card desktop-col-5 w-full">
+      <div id="pie-chart-wrapper" class="w-full flex items-center justify-center relative">
+        <div class="text-xs text-on-surface-variant">Memuat data...</div>
+      </div>
+    </div>
+
+    <div class="flex flex-col justify-center items-center relative min-w-0 responsive-card desktop-col-7 w-full">
+      <div class="w-full max-w-[400px] relative flex justify-center">
+        <!-- Bar Chart Container -->
+        <div id="daily-completion-chart" class="flex justify-between w-full gap-2">
+          <!-- Bars injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Recent Activity/Ships List (Span full width on mobile, 12 cols desktop) -->
+<div class="glass-card rounded-2xl w-full md:col-span-12 overflow-hidden mt-2">
+<div class="p-6 border-b border-white/5 flex justify-between items-center bg-surface-container-lowest/30">
+<h3 class="text-xl text-on-surface flex items-center gap-3 font-medium tracking-wide">
+<span class="material-symbols-outlined text-outline">sync</span> Ongoing Container Updates
+</h3>
+<button class="text-secondary font-label-sm text-label-sm hover:text-primary transition-colors">See All</button>
+</div>
+<div class="flex flex-col" id="ongoing-updates-list">
+  <div class="p-8 text-center text-on-surface-variant flex flex-col items-center">
+    <span class="material-symbols-outlined text-4xl mb-2 animate-spin">sync</span>
+    Memuat data kontainer...
+  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+<!-- Decorative Floating Action Button (Mobile Contextual - Only if needed, suppressed per instructions for general dashboard, but keeping a subtle hint if required by future logic. Omitted here for cleaner dashboard canvas as per standard iOS style unless specific action is paramount). -->
+<!-- Removed FAB to maintain clean bento canvas -->
+
+<script type="module" src="/src/upload.js"></script>
+<script>
+window.addEventListener("error", function(e) {
+  alert("Global Error: " + e.message + " at " + e.filename + ":" + e.lineno);
+});
+window.addEventListener("unhandledrejection", function(e) {
+  alert("Unhandled Promise Rejection: " + e.reason);
+});
+</script>
+<script type="module" src="/src/dashboard.js"></script>
+
+<script type="module">
+  import { logout } from './src/auth.js';
+  document.getElementById('btn-logout')?.addEventListener('click', () => {
+    logout();
+  });
+</script>
+
+
+
+  <script type="module" src="/src/components/Navigation.js"></script>
+</body></html>

@@ -1,0 +1,50 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temp files
+*.bak
+*.pyc
+.temp_datakontainer/
+.temp_uiapk/
+tmp_revisi/
+simulasi_mobile/
+fix_*.py
+patch_*.py
+update_*.py
+revert_*.py
+rewrite_*.py
+restore_*.py
+test*.py
+html_backup_*.html
+recovered_*.html
+check_*.js
+test_*.js

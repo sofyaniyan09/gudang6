@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html lang="en" class="dark"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inventaris Gudang 6 - Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+
+<style>
+  html, body {
+    background-color: #10131b !important;
+    color: #e0e2ed !important;
+  }
+
+  body *:not(.material-symbols-outlined) {
+    font-size: 13px !important;
+  }
+  
+  /* Subtle Dark Gradient Background for body */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 50% -20%, rgba(170, 199, 255, 0.08) 0%, transparent 60%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .icon-filled {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .glass-card, .glass-panel, .ios-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(40px) !important;
+    -webkit-backdrop-filter: blur(40px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.3s ease;
+    color: white !important;
+  }
+  
+  .glass-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+  }
+  
+  .glass-card *, .glass-panel *, .ios-card * {
+    color: inherit;
+  }
+
+  /* Custom Scrollbar for Dark UI */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+    /* Sidebar Collapse Transitions */
+    #app-sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .sidebar-collapsed #app-sidebar { width: 5.5rem; }
+    .sidebar-collapsed #app-sidebar .sidebar-text { opacity: 0; width: 0; display: none; }
+    .sidebar-collapsed #btn-toggle-sidebar { transform: rotate(180deg); }
+    #main-content { transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    @media (min-width: 768px) {
+      .sidebar-collapsed #main-content.md\:pl-64 { padding-left: 5.5rem; }
+      .sidebar-collapsed #main-content.md\:ml-64 { margin-left: 5.5rem; }
+    }
+
+</style>
+
+    <link rel="stylesheet" href="/assets/tailwind.css"/>
+</head>
+<body class="bg-gradient-oceanic min-h-screen font-body-md text-on-surface antialiased flex flex-col justify-center items-center relative overflow-hidden">
+<div class="absolute inset-0 w-full h-full pointer-events-none opacity-40">
+<svg class="absolute w-full h-full" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<filter id="blur">
+<fegaussianblur stddeviation="40"></fegaussianblur>
+</filter>
+</defs>
+<circle class="animate-pulse" cx="20%" cy="10%" fill="#a3defe" filter="url(#blur)" opacity="0.5" r="20%" style="animation-duration: 8s;"></circle>
+<circle class="animate-pulse" cx="80%" cy="80%" fill="#e0f0ff" filter="url(#blur)" opacity="0.6" r="25%" style="animation-duration: 12s;"></circle>
+</svg>
+</div>
+<main class="w-full max-w-md px-margin-mobile relative z-10 flex flex-col items-center">
+<div class="glass-panel w-full rounded-2xl shadow-level-2 p-8 border border-white/40 relative overflow-hidden flex flex-col items-center">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-fixed-dim via-primary to-primary-container"></div>
+<div class="mb-4 mt-6 flex items-center justify-center">
+<img src="/assets/logo_transparent.png" alt="Logo CC6" class="h-24 w-auto object-contain drop-shadow-md">
+</div>
+<h1 class="font-display-sm text-[24px] font-bold text-white text-center tracking-tight mb-10">Penerimaan Material CC#6</h1>
+<form id="login-form" class="flex flex-col w-full">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/50">person</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-xl glass-input bg-transparent text-white focus:border-white focus:ring-1 focus:ring-white transition-colors font-body-md text-body-md outline-none shadow-sm" id="id-number" name="email" placeholder="ID Admin / Email" required="" type="text"/>
+</div>
+<div class="relative mt-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/50">lock</span>
+<input class="w-full pl-10 pr-10 py-3 rounded-xl glass-input bg-transparent text-white focus:border-white focus:ring-1 focus:ring-white transition-colors font-body-md text-body-md outline-none shadow-sm" id="password" name="password" placeholder="Password" required="" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+<div class="flex justify-between items-center mt-4 px-1">
+<label class="flex items-center gap-2 cursor-pointer group">
+<div class="relative flex items-center justify-center">
+<input class="peer appearance-none w-5 h-5 border border-outline-variant rounded bg-surface-container-lowest checked:bg-primary checked:border-primary transition-colors" type="checkbox"/>
+<span class="material-symbols-outlined absolute text-on-primary text-[16px] pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+</div>
+<span class="font-label-md text-label-md text-white/80 group-hover:text-white transition-colors">Remember me</span>
+</label>
+<a class="font-label-md text-label-md text-primary hover:text-primary-container transition-colors" href="#">Forgot password?</a>
+</div>
+<button id="btn-submit" class="mt-8 w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-3.5 rounded-xl shadow-level-1 hover:shadow-level-2 transition-all active:scale-[0.98] flex items-center justify-center gap-2 relative overflow-hidden group" type="submit">
+<span class="relative z-10 font-semibold">Login to Dashboard</span>
+<span class="material-symbols-outlined relative z-10 text-[20px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out rounded-xl"></div>
+</button>
+</form>
+<div id="error-msg" class="hidden text-error text-center mt-2 text-sm"></div>
+</div>
+</main>
+<script>
+        document.querySelector('button[aria-label="Toggle password visibility"]').addEventListener('click', function() {
+            const input = document.getElementById('password');
+            const icon = this.querySelector('.material-symbols-outlined');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility_off';
+            }
+        });
+    </script>
+
+<script type="module" src="/src/auth.js"></script>
+<script type="module" src="/src/spa.js"></script>
+<script type="module" src="/src/login.js"></script>
+</body></html>

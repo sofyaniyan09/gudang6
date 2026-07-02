@@ -1,0 +1,170 @@
+<svg id="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700" class="w-full h-full" style="transform: none; filter: none;">
+                <defs>
+                    <!-- Gradien Pencahayaan Gedung -->
+                    <!-- Sisi Kiri (Cahaya Redup) -->
+                    <linearGradient id="grad-left" x1="0%" y1="100%" x2="0%" y2="0%">
+    <stop offset="0%" stop-color="#1A2B4C"/>
+    <stop offset="50%" stop-color="#243960"/>
+    <stop offset="100%" stop-color="#3A5382"/>
+</linearGradient>
+                    
+                    <!-- Sisi Kanan / Muka Depan (Cahaya Terang / Biru Baja) -->
+                    <linearGradient id="grad-front-blue" x1="0%" y1="100%" x2="0%" y2="0%">
+    <stop offset="0%" stop-color="#3E90FF"/>
+    <stop offset="60%" stop-color="#6FB4FF"/>
+    <stop offset="100%" stop-color="#AAC7FF"/>
+</linearGradient>
+
+                    <!-- Sisi Kanan / Muka Depan (Aksen Oranye Angka 6) -->
+                    <linearGradient id="grad-front-orange" x1="0%" y1="100%" x2="0%" y2="0%">
+    <stop offset="0%" stop-color="#AAC7FF"/>
+    <stop offset="50%" stop-color="#E0E2ED"/>
+    <stop offset="100%" stop-color="#ffffff"/>
+</linearGradient>
+                    
+                    <!-- Gradien Atap -->
+                    <linearGradient id="grad-roof" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#f8fafc"/>
+                        <stop offset="100%" stop-color="#cbd5e1"/>
+                    </linearGradient>
+
+                    <!-- Jendela Gedung / Detail -->
+                    <pattern id="windows" x="0" y="0" width="20" height="40" patternUnits="userSpaceOnUse">
+                        <rect x="5" y="10" width="10" height="20" fill="#1E2A45" opacity="0.3"/>
+                    </pattern>
+                </defs>
+
+                <!-- 
+                    SISTEM KOORDINAT PERSPEKTIF
+                    Bawah lebar, Atas menyempit menuju titik tengah (Vanishing Point di atas).
+                -->
+                <g transform="translate(0, 50)"> <!-- Geser sedikit ke bawah -->
+                    
+                    <!-- ==============================
+                         HURUF C PERTAMA (KIRI)
+                         ============================== -->
+                    
+                    <!-- Dinding Samping (Ketebalan) Huruf C Kiri -->
+                    <!-- Sisi Dalam -->
+                    <polygon points="175,550 175,400 200,320 200,450" fill="url(#grad-left)"/>
+                    <!-- Sisi Atas C -->
+                    <polygon points="210,130 180,130 200,200 215,200" fill="url(#grad-left)"/>
+                    
+                    <!-- Muka Depan Huruf C Kiri -->
+                    <!-- Bawah -->
+                    <polygon points="50,550 175,550 160,400 80,400" fill="url(#grad-front-blue)"/>
+                    <!-- Punggung Kiri -->
+                    <polygon points="50,550 80,400 130,130 110,130" fill="url(#grad-front-blue)"/>
+                    <!-- Atas -->
+                    <polygon points="110,130 210,130 190,200 120,200" fill="url(#grad-front-blue)"/>
+                    <!-- Jendela pada Muka Depan -->
+                    <polygon points="50,550 175,550 160,400 80,400" fill="url(#windows)" opacity="0.5"/>
+                    <polygon points="50,550 80,400 130,130 110,130" fill="url(#windows)" opacity="0.5"/>
+
+                    <!-- Atap Gergaji (Sawtooth) C Kiri -->
+                    <!-- Sisi Miring (Kaca Atap) -->
+                    <polygon points="110,130 160,70 230,70 210,130" fill="#60a5fa" opacity="0.8"/>
+                    <!-- Sisi Tegak (Penutup Atap) -->
+                    <polygon points="160,70 140,130 210,130 230,70" fill="url(#grad-roof)"/>
+                    <!-- Sisi Samping Atap -->
+                    <polygon points="110,130 140,130 160,70" fill="#94a3b8"/>
+
+
+                    <!-- ==============================
+                         HURUF C KEDUA (TENGAH)
+                         ============================== -->
+                    
+                    <!-- Dinding Samping (Ketebalan) Huruf C Tengah -->
+                    <!-- Sisi Dalam -->
+                    <polygon points="345,550 330,400 335,320 345,450" fill="url(#grad-left)"/>
+                    <!-- Sisi Atas C -->
+                    <polygon points="360,130 330,130 335,200 365,200" fill="url(#grad-left)"/>
+                    
+                    <!-- Muka Depan Huruf C Tengah -->
+                    <!-- Bawah -->
+                    <polygon points="220,550 345,550 315,400 240,400" fill="url(#grad-front-blue)"/>
+                    <!-- Punggung Kiri -->
+                    <polygon points="220,550 240,400 270,130 260,130" fill="url(#grad-front-blue)"/>
+                    <!-- Atas -->
+                    <polygon points="260,130 360,130 345,200 275,200" fill="url(#grad-front-blue)"/>
+                    <!-- Jendela -->
+                    <polygon points="220,550 345,550 315,400 240,400" fill="url(#windows)" opacity="0.5"/>
+                    <polygon points="220,550 240,400 270,130 260,130" fill="url(#windows)" opacity="0.5"/>
+
+                    <!-- Atap Gergaji (Sawtooth) C Tengah -->
+                    <!-- Sisi Miring -->
+                    <polygon points="260,130 285,70 365,70 360,130" fill="#60a5fa" opacity="0.8"/>
+                    <!-- Sisi Tegak -->
+                    <polygon points="285,70 290,130 360,130 365,70" fill="url(#grad-roof)"/>
+                    <!-- Sisi Samping Atap -->
+                    <polygon points="260,130 290,130 285,70" fill="#94a3b8"/>
+
+
+                    <!-- ==============================
+                         ANGKA 6 (KANAN)
+                         ============================== -->
+                    
+                    <!-- Lubang Tengah (Ketebalan Dalam) Angka 6 -->
+                    <polygon points="460,450 435,450 430,300 450,300" fill="url(#grad-left)"/>
+
+                    <!-- Muka Depan Angka 6 -->
+                    <!-- Bawah/Perut Angka 6 -->
+                    <!-- Outer shape: points="390,550 550,550 495,280 395,280" -->
+                    <!-- Inner hole: points="435,450 480,450 460,320 425,320" -->
+                    <!-- Kita belah menjadi beberapa polygon agar mudah di SVG tanpa path rumit -->
+                    
+                    <!-- Kaki Bawah -->
+                    <polygon points="390,550 550,550 515,450 410,450" fill="url(#grad-front-orange)"/>
+                    <!-- Punggung Kanan -->
+                    <polygon points="550,550 515,450 485,280 500,280" fill="url(#grad-front-orange)"/>
+                    <!-- Punggung Kiri Bawah -->
+                    <polygon points="390,550 410,450 415,280 400,280" fill="url(#grad-front-orange)"/>
+                    <!-- Atap Perut Angka 6 -->
+                    <polygon points="415,280 485,280 475,320 420,320" fill="url(#grad-front-orange)"/>
+                    
+                    <!-- Leher Angka 6 yang menjulang ke atas -->
+                    <polygon points="400,280 425,280 425,130 410,130" fill="url(#grad-front-orange)"/>
+                    <!-- Topi/Atap Angka 6 -->
+                    <polygon points="410,130 510,130 490,200 420,200" fill="url(#grad-front-orange)"/>
+
+                    <!-- Jendela Angka 6 -->
+                    <polygon points="390,550 550,550 515,450 410,450" fill="url(#windows)" opacity="0.3"/>
+                    <polygon points="400,280 425,280 425,130 410,130" fill="url(#windows)" opacity="0.3"/>
+
+                    <!-- Atap Gergaji (Sawtooth) Angka 6 -->
+                    <!-- Sisi Miring -->
+                    <polygon points="410,130 415,70 505,70 510,130" fill="#E0E2ED" opacity="0.8"/>
+                    <!-- Sisi Tegak -->
+                    <polygon points="415,70 440,130 510,130 505,70" fill="url(#grad-roof)"/>
+                    <!-- Sisi Samping Atap -->
+                    <polygon points="410,130 440,130 415,70" fill="#94a3b8"/>
+
+                    
+                    <!-- ==============================
+                         FONDASI & TANAH (GROUND)
+                         ============================== -->
+                    
+                    <!-- Platform tempat gudang berdiri (Memberi kesan kolosal) -->
+                    <!-- Depan Platform -->
+                    <polygon points="10,550 590,550 590,570 10,570" fill="#2B3A5A"/>
+                    <!-- Samping Platform -->
+                    <polygon points="10,550 10,570 30,560 30,540" fill="#1E2A45"/>
+                    <!-- Atas Platform -->
+                    <polygon points="10,550 590,550 570,540 30,540" fill="#3B4D70"/>
+
+                    <!-- Garis Neon di Fondasi -->
+                    <polygon points="10,560 590,560 590,563 10,563" fill="#AAC7FF" opacity="0.8"/>
+                    
+                    <!-- Siluet Burung (Skala Pembanding - Membuat gedung terlihat raksasa) -->
+                    <path d="M150,50 Q160,40 170,50 Q160,45 150,50 Z" fill="#ffffff" opacity="0.5"/>
+                    <path d="M170,50 Q180,40 190,50 Q180,45 170,50 Z" fill="#ffffff" opacity="0.5"/>
+                    <path d="M130,30 Q135,25 140,30 Q135,27 130,30 Z" fill="#ffffff" opacity="0.3"/>
+                    <path d="M140,30 Q145,25 150,30 Q145,27 140,30 Z" fill="#ffffff" opacity="0.3"/>
+                </g>
+
+                <!-- Typografi (Disesuaikan dengan perspektif) -->
+                <g transform="translate(300, 660)">
+                    <text x="0" y="0" font-family="'Montserrat', sans-serif" font-weight="900" font-size="42" text-anchor="middle" fill="#ffffff" letter-spacing="8">GUDANG 6</text>
+                    <text x="0" y="25" font-family="'Montserrat', sans-serif" font-weight="700" font-size="14" text-anchor="middle" fill="#94a3b8" letter-spacing="14">WAREHOUSE CC6</text>
+                </g>
+            </svg>
