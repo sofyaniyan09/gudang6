@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../main.dart';
 import '../widgets/obsidian_scaffold.dart';
 import '../widgets/glass_card.dart';
@@ -52,9 +53,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> _logout() async {
     await supabase.auth.signOut();
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/login');
-    }
+    // AuthGate di main.dart secara otomatis mendeteksi perubahan sesi dan akan merouting ke LoginPage.
   }
 
   Widget _buildTabNavigator(
@@ -102,7 +101,13 @@ class _DashboardPageState extends State<DashboardPage> {
       },
       child: ObsidianScaffold(
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: const Color(0xFF10131B).withOpacity(0.6),
+          flexibleSpace: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
           elevation: 0,
           leadingWidth: 72,
           leading: ValueListenableBuilder<String?>(

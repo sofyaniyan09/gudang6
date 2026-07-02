@@ -48,3 +48,5 @@ html_backup_*.html
 recovered_*.html
 check_*.js
 test_*.js
+.vercel
+.env*

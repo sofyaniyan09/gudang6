@@ -56,9 +56,12 @@ class _OverviewTabState extends State<OverviewTab> {
   }
 
   Future<void> _fetchOverviewData() async {
-    setState(() {
-      _isLoading = true;
-    });
+    // Hanya tampilkan loading layar penuh jika data masih kosong (pertama kali buka)
+    if (_ongoingUpdates.isEmpty) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       // Fetch up to 2000 items to get a good picture of the data
@@ -298,55 +301,63 @@ class _OverviewTabState extends State<OverviewTab> {
                       letterSpacing: 1.5),
                 ),
                 const SizedBox(height: 24),
-                Center(
-                  child: SizedBox(
-                    width: 250,
-                    height: 250,
-                    child: Stack(
-                      children: [
-                        PieChart(
-                          PieChartData(
-                            sectionsSpace: 4,
-                            centerSpaceRadius: 75,
-                            sections: _getPieSections(),
-                          ),
-                        ),
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$_totalContainers',
-                                style: const TextStyle(
-                                    fontSize: 42,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFFE0E2ED)),
+                AspectRatio(
+                  aspectRatio: 15 / 9,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 1, // Kiri: Diagram Pie (50%)
+                        child: Stack(
+                          children: [
+                            PieChart(
+                              PieChartData(
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 28, // Diperkecil lagi agar super aman dari overflow
+                                sections: _getPieSections(),
                               ),
-                              const Text(
-                                'OVERALL',
-                                style: TextStyle(
-                                    fontSize: 16, 
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.5,
-                                    color: Color(0xFF8B91A0)),
+                            ),
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '$_totalContainers',
+                                    style: const TextStyle(
+                                        fontSize: 20, // Diperkecil
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFE0E2ED)),
+                                  ),
+                                  const Text(
+                                    'OVERALL',
+                                    style: TextStyle(
+                                        fontSize: 8, // Diperkecil
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.0,
+                                        color: Color(0xFF8B91A0)),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 1, // Kanan: Keterangan (50%)
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLegend('Selesai', _selesai, const Color(0xFF4ADE80)),
+                            const SizedBox(height: 12),
+                            _buildLegend('On Proses', _onProses, const Color(0xFFFB923C)),
+                            const SizedBox(height: 12),
+                            _buildLegend('Belum Update', _belumDiupdate, const Color(0xFF3E90FF)),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 32),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _buildLegend('Selesai', _selesai, const Color(0xFF4ADE80)),
-                    const SizedBox(height: 12),
-                    _buildLegend('On Proses', _onProses, const Color(0xFFFB923C)), // Orange
-                    const SizedBox(height: 12),
-                    _buildLegend('Belum Diupdate', _belumDiupdate, const Color(0xFF3E90FF)), // Biru Aplikasi
-                  ],
                 ),
               ],
             ),
@@ -368,9 +379,8 @@ class _OverviewTabState extends State<OverviewTab> {
                       letterSpacing: 1.5),
                 ),
                 const SizedBox(height: 24),
-                SizedBox(
-                  height: 180,
-                  width: double.infinity,
+                AspectRatio(
+                  aspectRatio: 15 / 9,
                   child: LineChart(
                     LineChartData(
                       maxY: _getMaxY(),
@@ -511,7 +521,10 @@ class _OverviewTabState extends State<OverviewTab> {
                               tipe: item['tipe']?.toString() ?? '',
                             ),
                           ),
-                        );
+                        ).then((_) {
+                          // Refresh dashboard (Ongoing) ketika kembali dari halaman update
+                          _fetchOverviewData();
+                        });
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -522,96 +535,51 @@ class _OverviewTabState extends State<OverviewTab> {
                               Border.all(color: Colors.white.withOpacity(0.05)),
                         ),
                         padding: const EdgeInsets.all(16),
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: statusColor.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(Icons.inventory_2,
-                                  color: statusColor, size: 20),
+                            // ATAS: Nama Kontainer
+                            Text(
+                              item['nomor_kontainer']?.toString() ??
+                                  'Tanpa Nomor',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFE0E2ED),
+                                  fontSize: 16),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item['nomor_kontainer']?.toString() ??
-                                        'Tanpa Nomor',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFFE0E2ED),
-                                        fontSize: 16),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    item['nama_file']?.toString() ?? '',
-                                    style: const TextStyle(
-                                        color: Color(0xFF8B91A0), fontSize: 12),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
+                            const SizedBox(height: 4),
+                            // ATAS: Nama Kapal (File)
+                            Text(
+                              item['nama_file']?.toString() ?? '',
+                              style: const TextStyle(
+                                  color: Color(0xFF8B91A0), fontSize: 12),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            
+                            const SizedBox(height: 16),
+                            
+                            // BAWAH: Waktu Terakhir Update & Indikator (Progress Bar)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${item['percentage'] ?? 0}% (${item['progress'] ?? '0/0'})',
-                                      style: const TextStyle(
-                                          color: Color(0xFF3E90FF),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: statusColor.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                            color:
-                                                statusColor.withOpacity(0.3)),
-                                      ),
-                                      child: Text(
-                                        status,
-                                        style: TextStyle(
-                                            color: statusColor,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ],
+                                Text(
+                                  dateFormatted,
+                                  style: const TextStyle(
+                                      color: Color(0xFF6B7280), fontSize: 11),
                                 ),
-                                const SizedBox(height: 8),
                                 SizedBox(
-                                  width: 120,
+                                  width: 100,
                                   child: LinearProgressIndicator(
                                     value: (item['percentage'] as int? ?? 0) /
                                         100.0,
                                     backgroundColor:
                                         Colors.white.withOpacity(0.1),
                                     valueColor:
-                                        const AlwaysStoppedAnimation<Color>(
-                                            Color(0xFF3E90FF)),
+                                        AlwaysStoppedAnimation<Color>(statusColor),
                                     minHeight: 4,
                                     borderRadius: BorderRadius.circular(2),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  dateFormatted,
-                                  style: const TextStyle(
-                                      color: Color(0xFF414754), fontSize: 10),
                                 ),
                               ],
                             ),
@@ -644,9 +612,9 @@ class _OverviewTabState extends State<OverviewTab> {
         color: color,
         value: value.toDouble(),
         title: pct >= 5 ? '${pct.round()}%' : '',
-        radius: 40,
+        radius: 28, // Diperkecil lagi agar sangat proporsional di layar kecil
         titleStyle: const TextStyle(
-          fontSize: 16,
+          fontSize: 10, // Diperkecil
           fontWeight: FontWeight.bold,
           color: Colors.white,
           shadows: [Shadow(color: Colors.black26, blurRadius: 4)],
@@ -663,30 +631,32 @@ class _OverviewTabState extends State<OverviewTab> {
 
   Widget _buildLegend(String title, int value, Color color) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Container(
-          width: 14,
-          height: 14,
+          width: 12,
+          height: 12,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(3),
           ),
         ),
-        const SizedBox(width: 12),
-        SizedBox(
-          width: 130, // Fixed width for alignment
+        const SizedBox(width: 8),
+        Expanded(
           child: Text(
             title,
-            style: const TextStyle(color: Color(0xFFC0C6D6), fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(color: Color(0xFFC0C6D6), fontSize: 10, fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
+        const SizedBox(width: 4),
         Text(
           value.toString(),
           style: const TextStyle(
               color: Color(0xFFE0E2ED),
               fontWeight: FontWeight.bold,
-              fontSize: 14),
+              fontSize: 12),
         ),
       ],
     );

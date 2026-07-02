@@ -1,0 +1,4 @@
+node_modules/
+mobile_app/
+.agents/
+.DS_Store

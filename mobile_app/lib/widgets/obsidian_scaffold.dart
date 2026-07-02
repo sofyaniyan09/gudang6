@@ -19,6 +19,8 @@ class ObsidianScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       backgroundColor: const Color(0xFF10131B), // Background Color
       appBar: appBar,
       floatingActionButton: floatingActionButton,
@@ -26,6 +28,18 @@ class ObsidianScaffold extends StatelessWidget {
       bottomNavigationBar: bottomNavigationBar,
       body: Stack(
         children: [
+          // Background Image (Subtle Cinematic Silhouette)
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.15, // Dibuat sangat transparan agar tidak mengganggu tulisan
+              child: Image.asset(
+                'assets/login_bg.png',
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+              ),
+            ),
+          ),
+          
           // Background Gradient (Mimic radial-gradient)
           Positioned(
             top: -200,
