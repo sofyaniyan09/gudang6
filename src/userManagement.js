@@ -212,6 +212,8 @@ async function initUserManagement() {
 }
 
 async function loadUsers() {
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id;
     const tableBody = document.getElementById('user-table-body');
     tableBody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-on-surface-variant"><span class="material-symbols-outlined animate-spin text-primary text-4xl block mb-2">sync</span> Memuat daftar pengguna...</td></tr>`;
 
@@ -240,6 +242,20 @@ async function loadUsers() {
             ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm"><span class="material-symbols-outlined text-[14px]">shield</span> Admin</span>`
             : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Staff</span>`;
 
+        let actionButtons = '';
+        if (user.id !== currentUserId) {
+            actionButtons = `
+                <button onclick="openResetModal('${user.id}', '${user.nama || 'Tanpa Nama'}')" class="flex items-center gap-1.5 px-3 py-1.5 bg-error/10 text-error hover:bg-error/20 rounded-lg text-xs font-bold transition-colors">
+                    <span class="material-symbols-outlined text-[14px]">key</span> Reset
+                </button>
+                <button onclick="deleteUser('${user.id}', '${user.nama || 'Tanpa Nama'}')" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg text-xs font-bold transition-colors">
+                    <span class="material-symbols-outlined text-[14px]">delete</span> Hapus
+                </button>
+            `;
+        } else {
+            actionButtons = `<span class="text-[10px] text-primary bg-primary/10 px-2 py-1 rounded-full font-bold">Akun Anda (Terlindungi)</span>`;
+        }
+
         tr.innerHTML = `
             <td class="py-4 px-6 text-left whitespace-nowrap">
                 <span class="font-medium text-on-surface-variant text-sm">ID: ${user.id_number || '-'}</span>
@@ -260,12 +276,7 @@ async function loadUsers() {
             </td>
             <td class="py-4 px-6 text-right">
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick="openResetModal('${user.id}', '${user.nama || 'Tanpa Nama'}')" class="flex items-center gap-1.5 px-3 py-1.5 bg-error/10 text-error hover:bg-error/20 rounded-lg text-xs font-bold transition-colors">
-                        <span class="material-symbols-outlined text-[14px]">key</span> Reset
-                    </button>
-                    <button onclick="deleteUser('${user.id}', '${user.nama || 'Tanpa Nama'}')" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg text-xs font-bold transition-colors">
-                        <span class="material-symbols-outlined text-[14px]">delete</span> Hapus
-                    </button>
+                    ${actionButtons}
                 </div>
             </td>
         `;
