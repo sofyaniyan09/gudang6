@@ -1,8 +1,12 @@
-<!DOCTYPE html><html lang="en" class="dark" style="background-color: #10131b;"><head>\n    <!-- Sidebar State Initialization -->
+<!DOCTYPE html><html lang="en" class="dark"><head>
+    <!-- Sidebar State Initialization -->
 <script>
     (function() {
         if (localStorage.getItem('sidebar_collapsed') === 'true') {
             document.documentElement.classList.add('sidebar-collapsed');
+        }
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
         }
     })();
 </script>
@@ -20,15 +24,15 @@
     z-index: 30;
     box-shadow: inset 0 -1px 0 0 #414754; /* border-surface-variant */
   }
-  #view-ships th { background-color: #1c2027; }
-  #view-containers th, #view-items th { background-color: #0b0e15; }
+  #view-ships th { background-color: var(--color-surface-container); }
+  #view-containers th, #view-items th { background-color: var(--color-surface-container-lowest); }
 </style>
 
 
 
     <link rel="stylesheet" href="/assets/tailwind.css"/>
 </head>
-<body class="bg-background text-on-background font-body-md antialiased flex h-screen overflow-hidden" style="background-color: #10131b; color: #e0e2ed;">
+<body class="bg-background text-on-background font-body-md antialiased flex h-screen overflow-hidden">
 <!-- SideNavBar (Desktop) -->
 
 <!-- Main Content Wrapper -->
@@ -66,9 +70,9 @@
 <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4">Kelola Data Kapal</h1>
 </div>
 <!-- Data Table Card -->
-<div class="bg-surface-container-lowest rounded-xl glass-panel overflow-hidden flex flex-col flex-1 min-h-0 custom-scrollbar" id="view-ships-wrapper">
+<div class="glass-panel rounded-2xl p-2 sm:p-4 lg:px-6 lg:py-4 border border-white/10 relative overflow-hidden flex flex-col flex-1 min-h-0" id="view-ships-wrapper">
 <!-- Card Toolbar -->
-<div class="p-lg border-b border-surface-variant flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 bg-surface-container-lowest">
+<div class="pb-4 mb-4 border-b border-surface-variant flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
 
 <div class="flex items-center gap-3 w-full sm:w-auto">
 
@@ -82,7 +86,7 @@
 <!-- Responsive Table Wrapper -->
 <div class="overflow-auto w-full flex-1 min-h-0 pb-4 custom-scrollbar">
 <table class="w-full text-left border-collapse table-fixed min-w-[700px]">
-<thead class="sticky top-0 z-20 bg-surface-container">
+<thead class="sticky top-0 z-20 bg-surface-container-lowest">
 <tr class="border-b border-surface-variant">
 <th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-center w-[30%]">Nama Kapal (File)</th>
 <th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-center w-[15%]">Data Kontainer</th>
@@ -176,6 +180,10 @@
 
 
 
+<script type="module">
+  import { requireAuth } from './src/auth.js';
+  requireAuth('admin');
+</script>
 <script type="module" src="/src/upload.js"></script>
 <script type="module" src="/src/kelolaKapal.js"></script>
   <script type="module" src="/src/components/Navigation.js"></script>

@@ -1,8 +1,12 @@
-<!DOCTYPE html><html lang="en" class="dark" style="background-color: #10131b;"><head>\n  <!-- Sidebar State Initialization -->
+<!DOCTYPE html><html lang="en" class="dark"><head>
+  <!-- Sidebar State Initialization -->
 <script>
   (function() {
     if (localStorage.getItem('sidebar_collapsed') === 'true') {
       document.documentElement.classList.add('sidebar-collapsed');
+    }
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.classList.remove('dark');
     }
   })();
 </script>
@@ -16,11 +20,11 @@
 
 <script type="module">
   import { requireAuth } from './src/auth.js';
-  requireAuth();
+  requireAuth('admin');
 </script>
     <link rel="stylesheet" href="/assets/tailwind.css"/>
 </head>
-<body class="bg-background text-on-background flex flex-col md:flex-row min-h-screen" style="background-color: #10131b; color: #e0e2ed;">
+<body class="bg-background text-on-background flex flex-col md:flex-row min-h-screen">
 
 <!-- SideNavBar (Desktop) -->
 
@@ -42,17 +46,17 @@
 
   <div class="pb-lg pt-6 lg:pt-8 w-full max-w-[1536px] px-4 md:px-6 mx-auto">
   <!-- Data Table Card -->
-<div class="bg-surface-container-lowest rounded-xl glass-panel overflow-hidden flex flex-col custom-scrollbar">
+<div class="glass-panel rounded-2xl p-2 sm:p-4 lg:px-6 lg:py-4 border border-white/10 relative overflow-hidden flex flex-col custom-scrollbar">
 <!-- Responsive Table Wrapper -->
-<div class="overflow-x-auto w-full max-h-[65vh] overflow-auto pb-4 custom-scrollbar">
+<div class="overflow-x-auto w-full max-h-[65vh] pb-4 custom-scrollbar">
 <table class="w-full text-left border-collapse min-w-[800px]">
-<thead class="sticky top-0 z-20 bg-surface-container">
-<tr class="border-b border-surface-variant">
-<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">ID Pegawai</th>
-<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Nama Lengkap</th>
-<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Role</th>
-<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Dibuat Pada</th>
-<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-right">Aksi</th>
+<thead class="sticky top-0 z-20 bg-surface-container-lowest">
+<tr class="border-b border-surface-variant text-on-surface-variant">
+<th class="py-3 px-4 font-label-md uppercase tracking-wider">ID Staf</th>
+<th class="py-3 px-4 font-label-md uppercase tracking-wider">Nama Lengkap</th>
+<th class="py-3 px-4 font-label-md uppercase tracking-wider">Role</th>
+<th class="py-3 px-4 font-label-md uppercase tracking-wider">Dibuat Pada</th>
+<th class="py-3 px-4 font-label-md uppercase tracking-wider text-right">Aksi</th>
 </tr>
 </thead>
 <tbody id="user-table-body" class="font-body-md text-body-md text-on-surface divide-y divide-surface-variant">
@@ -77,8 +81,8 @@
         <div id="add-user-error" class="hidden bg-error/20 text-error px-4 py-3 rounded-xl text-label-md font-medium border border-error/30"></div>
         
         <div>
-          <label class="block text-label-sm font-medium text-on-surface-variant mb-1">ID Pegawai (Sesuai ID Card)</label>
-          <input type="text" id="input-id-number" required class="w-full bg-surface-container-low border border-white/10 rounded-xl px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Ketik ID Pegawai...">
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-1">ID Staf (Sesuai ID Card)</label>
+          <input type="text" id="input-id-number" required minlength="7" class="w-full bg-surface-container-low border border-white/10 rounded-xl px-4 py-2.5 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Ketik ID Staf...">
         </div>
         <div>
           <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Nama Lengkap</label>
@@ -125,6 +129,27 @@
           <button type="button" id="btn-cancel-reset" class="flex-1 py-2.5 rounded-xl border border-white/10 text-on-surface hover:bg-surface-container transition-colors font-label-md">Batal</button>
           <button type="submit" id="btn-save-reset" class="flex-1 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-primary/90 transition-colors font-label-md font-semibold flex items-center justify-center gap-2">
             <span>Reset</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Modal Change Role -->
+  <div id="modal-change-role" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div id="modal-backdrop-role" class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity opacity-0"></div>
+    <div id="modal-content-role" class="bg-surface-container-high w-full max-w-md rounded-2xl border border-white/10 shadow-2xl p-6 relative z-10 scale-95 opacity-0 transition-all duration-300">
+      <h2 class="text-title-lg font-bold text-on-surface mb-2">Ubah Role Pengguna</h2>
+      <p class="text-label-md text-on-surface-variant mb-6">Apakah Anda yakin ingin mengubah role <strong id="role-target-name" class="text-on-surface"></strong> menjadi <strong id="role-target-new" class="text-primary"></strong>?</p>
+      <form id="form-change-role" class="space-y-4">
+        <input type="hidden" id="input-role-uid">
+        <input type="hidden" id="input-role-new">
+        <div id="change-role-error" class="hidden bg-error/20 text-error px-4 py-3 rounded-xl text-label-md font-medium border border-error/30"></div>
+        
+        <div class="flex gap-3 pt-4 mt-6 border-t border-white/10">
+          <button type="button" id="btn-cancel-role" class="flex-1 py-2.5 rounded-xl border border-white/10 text-on-surface hover:bg-surface-container transition-colors font-label-md">Batal</button>
+          <button type="submit" id="btn-save-role" class="flex-1 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-primary/90 transition-colors font-label-md font-semibold flex items-center justify-center gap-2">
+            <span>Ubah Role</span>
           </button>
         </div>
       </form>

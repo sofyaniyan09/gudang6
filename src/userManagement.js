@@ -101,10 +101,7 @@ async function initUserManagement() {
         }
 
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .delete()
-                .eq('id', uid);
+            const { error } = await supabase.rpc('admin_delete_user', { uid: uid });
 
             if (error) throw error;
             alert(`Akun ${nama} berhasil dihapus.`);
@@ -114,6 +111,63 @@ async function initUserManagement() {
             alert(`Gagal menghapus akun: ${error.message}`);
         }
     };
+
+    // Setup Change Role Modal
+    const roleModal = document.getElementById('modal-change-role');
+    const roleModalContent = document.getElementById('modal-content-role');
+    const btnCancelRole = document.getElementById('btn-cancel-role');
+
+    window.changeRole = function(uid, nama, currentRole) {
+        const newRole = currentRole === 'admin' ? 'staf' : 'admin';
+        document.getElementById('input-role-uid').value = uid;
+        document.getElementById('input-role-new').value = newRole;
+        document.getElementById('role-target-name').textContent = nama;
+        document.getElementById('role-target-new').textContent = newRole.toUpperCase();
+        
+        document.getElementById('change-role-error').classList.add('hidden');
+        
+        roleModal.classList.remove('hidden');
+        void roleModal.offsetWidth;
+        roleModalContent.classList.remove('scale-95', 'opacity-0');
+        roleModalContent.classList.add('scale-100', 'opacity-100');
+    };
+
+    function closeRoleModal() {
+        roleModalContent.classList.remove('scale-100', 'opacity-100');
+        roleModalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            roleModal.classList.add('hidden');
+        }, 200);
+    }
+
+    btnCancelRole.addEventListener('click', closeRoleModal);
+    document.getElementById('modal-backdrop-role').addEventListener('click', closeRoleModal);
+
+    document.getElementById('form-change-role').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const uid = document.getElementById('input-role-uid').value;
+        const newRole = document.getElementById('input-role-new').value;
+        const errorMsg = document.getElementById('change-role-error');
+        const submitBtn = document.getElementById('btn-save-role');
+
+        errorMsg.classList.add('hidden');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Memproses...';
+
+        try {
+            const { error } = await supabase.rpc('admin_change_role', { uid: uid, new_role: newRole });
+            if (error) throw error;
+            closeRoleModal();
+            loadUsers();
+        } catch (error) {
+            console.error('Error changing role:', error);
+            errorMsg.textContent = error.message || 'Gagal mengubah role.';
+            errorMsg.classList.remove('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Ubah Role';
+        }
+    });
 
     // Form Submit (Reset Sandi)
     document.getElementById('form-reset-password').addEventListener('submit', async (e) => {
@@ -160,6 +214,14 @@ async function initUserManagement() {
         errorMsg.classList.add('hidden');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Memproses...';
+
+        if (idNumber.length < 7) {
+            errorMsg.textContent = "ID Staf minimal 7 karakter!";
+            errorMsg.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Simpan Akun';
+            return;
+        }
 
         try {
             // Cek apakah ID Number sudah dipakai di tabel profiles
@@ -245,6 +307,9 @@ async function loadUsers() {
         let actionButtons = '';
         if (user.id !== currentUserId) {
             actionButtons = `
+                <button onclick="changeRole('${user.id}', '${user.nama || 'Tanpa Nama'}', '${user.role}')" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 rounded-lg text-xs font-bold transition-colors">
+                    <span class="material-symbols-outlined text-[14px]">swap_vert</span> Ubah Role
+                </button>
                 <button onclick="openResetModal('${user.id}', '${user.nama || 'Tanpa Nama'}')" class="flex items-center gap-1.5 px-3 py-1.5 bg-error/10 text-error hover:bg-error/20 rounded-lg text-xs font-bold transition-colors">
                     <span class="material-symbols-outlined text-[14px]">key</span> Reset
                 </button>
@@ -257,24 +322,24 @@ async function loadUsers() {
         }
 
         tr.innerHTML = `
-            <td class="py-4 px-6 text-left whitespace-nowrap">
+            <td class="py-4 px-4 text-left whitespace-nowrap">
                 <span class="font-medium text-on-surface-variant text-sm">ID: ${user.id_number || '-'}</span>
             </td>
-            <td class="py-4 px-6 text-left">
+            <td class="py-4 px-4 text-left">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant shrink-0 relative user-avatar-list" data-uid="${user.id}">
                         <span class="material-symbols-outlined text-[20px]">person</span>
                     </div>
                     <p class="font-bold text-on-surface">${user.nama || 'Tanpa Nama'}</p>
                 </div>
             </td>
-            <td class="py-4 px-6 text-left">
+            <td class="py-4 px-4 text-left">
                 ${roleBadge}
             </td>
-            <td class="py-4 px-6 text-left">
-                <span class="text-[10px] text-on-surface-variant px-3 py-1 bg-surface-container rounded-lg font-bold">Terdaftar</span>
+            <td class="py-4 px-4 text-left">
+                <span class="text-[12px] text-on-surface-variant px-3 py-1 bg-surface-container rounded-lg font-bold">${user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'}</span>
             </td>
-            <td class="py-4 px-6 text-right">
+            <td class="py-4 px-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                     ${actionButtons}
                 </div>

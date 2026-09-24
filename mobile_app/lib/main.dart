@@ -3,9 +3,18 @@ import 'dart:ui';
 import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/dashboard_page.dart';
+import 'screens/admin_dashboard_page.dart';
 import 'widgets/obsidian_scaffold.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'widgets/glass_card.dart';
+import 'utils/share_service.dart';
+import 'utils/app_locale.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Global variable for theme
+final ValueNotifier<ThemeMode> globalThemeMode = ValueNotifier(ThemeMode.dark);
+// Global variable for logo
+final ValueNotifier<String?> globalLogoUrl = ValueNotifier(null);
 
 // Konstanta Supabase
 const supabaseUrl = 'https://ubfseivosripbfongkcp.supabase.co';
@@ -18,6 +27,26 @@ Future<void> main() async {
     url: supabaseUrl,
     anonKey: supabaseKey,
   );
+
+  final prefs = await SharedPreferences.getInstance();
+  final savedTheme = prefs.getString('theme');
+  if (savedTheme == 'light') {
+    globalThemeMode.value = ThemeMode.light;
+  }
+  
+  final savedLogoUrl = prefs.getString('app_logo_url');
+  if (savedLogoUrl != null && savedLogoUrl.isNotEmpty) {
+    globalLogoUrl.value = savedLogoUrl;
+  }
+
+  // Muat bahasa yang tersimpan
+  await AppLocale.init();
+
+  // Sinkronisasi logo secara background agar logo selalu update jika web merubahnya
+  _syncLogoUrl(prefs);
+
+  // Mulai periksa antrean WeCom di latar belakang (jika ada yang tertinggal)
+  ShareService.processWecomQueue();
 
   ErrorWidget.builder = (FlutterErrorDetails details) {
     return Material(
@@ -37,6 +66,34 @@ Future<void> main() async {
   runApp(const GudangMobileApp());
 }
 
+Future<void> _syncLogoUrl(SharedPreferences prefs) async {
+  try {
+    final supabaseClient = Supabase.instance.client;
+    final objects = await supabaseClient.storage.from('inspeksi_foto').list(path: 'public');
+    FileObject? logoObj;
+    for (var obj in objects) {
+      if (obj.name == 'logo_transparent.png') {
+        logoObj = obj;
+        break;
+      }
+    }
+    
+    if (logoObj != null) {
+      final lastModified = logoObj.updatedAt ?? '';
+      final publicUrl = supabaseClient.storage.from('inspeksi_foto').getPublicUrl('public/logo_transparent.png');
+      final timestampedUrl = '$publicUrl?t=${lastModified.hashCode}';
+      
+      final currentUrl = prefs.getString('app_logo_url');
+      if (currentUrl != timestampedUrl) {
+        await prefs.setString('app_logo_url', timestampedUrl);
+        globalLogoUrl.value = timestampedUrl;
+      }
+    }
+  } catch (e) {
+    debugPrint('Gagal sinkronisasi logo: $e');
+  }
+}
+
 final supabase = Supabase.instance.client;
 
 class GudangMobileApp extends StatelessWidget {
@@ -44,30 +101,61 @@ class GudangMobileApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Gudang 6 Mobile',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF10131B),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFAAC7FF), // primary
-          onPrimary: Color(0xFF003064), // on-primary
-          surface: Color(0xFF181C23), // surface-container-low
-          onSurface: Color(0xFFE0E2ED), // on-surface
-          onSurfaceVariant: Color(0xFFC0C6D6), // on-surface-variant
-          error: Color(0xFFFFB4AB),
-          onError: Color(0xFF690005),
-        ),
-        textTheme: ThemeData.dark().textTheme.apply(
-              bodyColor: const Color(0xFFE0E2ED),
-              displayColor: const Color(0xFFE0E2ED),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: globalThemeMode,
+      builder: (context, themeMode, _) {
+        return ValueListenableBuilder<String>(
+          valueListenable: globalLocale,
+          builder: (context, locale, _) {
+        return MaterialApp(
+          title: AppLocale.t('app_title'),
+          debugShowCheckedModeBanner: false,
+          themeMode: themeMode,
+          theme: ThemeData.light().copyWith(
+            scaffoldBackgroundColor: const Color(0xFFF5F7FB),
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF005DB8),
+              onPrimary: Color(0xFFFFFFFF),
+              surface: Color(0xFFF5F6FA),
+              onSurface: Color(0xFF1A1C23),
+              onSurfaceVariant: Color(0xFF3D4355),
+              error: Color(0xFFBA1A1A),
+              onError: Color(0xFFFFFFFF),
             ),
-        useMaterial3: true,
-      ),
-      home: const AuthGate(),
+            textTheme: ThemeData.light().textTheme.apply(
+                  bodyColor: const Color(0xFF1A1C23),
+                  displayColor: const Color(0xFF1A1C23),
+                ),
+            useMaterial3: true,
+          ),
+          darkTheme: ThemeData.dark().copyWith(
+            scaffoldBackgroundColor: const Color(0xFF10131B),
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFAAC7FF), // primary
+              onPrimary: Color(0xFF003064), // on-primary
+              surface: Color(0xFF181C23), // surface-container-low
+              onSurface: Color(0xFFE0E2ED), // on-surface
+              onSurfaceVariant: Color(0xFFC0C6D6), // on-surface-variant
+              error: Color(0xFFFFB4AB),
+              onError: Color(0xFF690005),
+            ),
+            textTheme: ThemeData.dark().textTheme.apply(
+                  bodyColor: const Color(0xFFE0E2ED),
+                  displayColor: const Color(0xFFE0E2ED),
+                ),
+            useMaterial3: true,
+          ),
+          home: const AuthGate(),
+        );
+          },
+        );
+      },
     );
   }
 }
+
+// Global variable to track the user's role
+String? globalUserRole;
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
@@ -78,15 +166,33 @@ class AuthGate extends StatefulWidget {
 
 class _AuthGateState extends State<AuthGate> {
   late final StreamSubscription<AuthState> _authStateSubscription;
+  Future<Map<String, dynamic>?>? _profileFuture;
+  String? _lastUserId;
 
   @override
   void initState() {
     super.initState();
+    _checkAndFetchProfile(supabase.auth.currentSession?.user.id);
+    
     _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
-      if (mounted) {
-        setState(() {}); // Rebuild on any auth state change (login, logout, token refresh)
+      if (!mounted) return;
+      
+      final userId = data.session?.user.id;
+      if (userId != _lastUserId) {
+         _checkAndFetchProfile(userId);
       }
+      
+      setState(() {});
     });
+  }
+
+  void _checkAndFetchProfile(String? userId) {
+    _lastUserId = userId;
+    if (userId != null) {
+      _profileFuture = supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
+    } else {
+      _profileFuture = null;
+    }
   }
 
   @override
@@ -105,16 +211,52 @@ class _AuthGateState extends State<AuthGate> {
     
     if (session.isExpired) {
       // Sesi tersimpan tapi kadaluarsa. Supabase sedang mencoba refresh.
-      // Tampilkan loading screen sementara menunggu hasil refresh token.
-      return const Scaffold(
-        backgroundColor: Color(0xFF10131B),
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFAAC7FF)),
+          child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
         ),
       );
     }
     
-    return const DashboardPage();
+    return FutureBuilder(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: Center(
+              child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+            ),
+          );
+        }
+
+        final role = snapshot.data?['role']?.toString();
+        
+        if (role == null) {
+          // Unlinked account! We must sign them out.
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+             await supabase.auth.signOut();
+             if (context.mounted) {
+               showDialog(
+                 context: context,
+                 builder: (context) => AlertDialog(
+                   title: Text(AppLocale.t('login_failed')),
+                   content: Text(AppLocale.t('login_error')),
+                   actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+                 ),
+               );
+             }
+          });
+          return const LoginPage();
+        }
+
+        globalUserRole = role; // Save role globally
+
+        // Admin and Staff now share the exact same UI flow (DashboardPage)
+        return const DashboardPage();
+      },
+    );
   }
 }
 
@@ -146,7 +288,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (idNumber.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nomor ID dan Password harus diisi')),
+        SnackBar(content: Text(AppLocale.t('login_error'))),
       );
       return;
     }
@@ -164,6 +306,12 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (response.user != null) {
+        final profileData = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', response.user!.id)
+            .maybeSingle();
+        final role = profileData?['role'];
         if (mounted) {
           Navigator.pushReplacement(
             context,
@@ -175,7 +323,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Nomor ID atau Password salah'),
+            content: Text(AppLocale.t('login_error')),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -184,7 +332,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Terjadi kesalahan yang tidak terduga'),
+            content: Text(AppLocale.t('error')),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -194,6 +342,21 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  Future<void> _loginWithGoogle() async {
+    try {
+      await supabase.auth.signInWithOAuth(OAuthProvider.google, redirectTo: 'io.supabase.gudang6://login-callback/');
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocale.t('login_failed')),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
       }
     }
   }
@@ -234,9 +397,9 @@ class _LoginPageState extends State<LoginPage> {
           Positioned(
             top: MediaQuery.paddingOf(context).top + 20,
             left: 24,
-            child: const Text(
-              'Gudang 6',
-              style: TextStyle(
+            child: Text(
+              AppLocale.t('login_title'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -288,14 +451,14 @@ class _LoginPageState extends State<LoginPage> {
                                 // Input fields
                                 _buildTextField(
                                   controller: _idController,
-                                  hint: 'Email or ID',
+                                  hint: AppLocale.t('employee_id'),
                                   isPassword: false,
                                 ),
                                 const SizedBox(height: 16),
                                 _buildTextField(
                                   controller: _passwordController,
                                   focusNode: _passFocus,
-                                  hint: 'Password',
+                                  hint: AppLocale.t('password'),
                                   isPassword: true,
                                 ),
                                 
@@ -318,7 +481,7 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
-                                      'Remember me',
+                                      globalLocale.value == 'zh' ? '记住我' : 'Ingat saya',
                                       style: TextStyle(color: const Color(0xFFE0E2ED).withOpacity(0.7), fontWeight: FontWeight.w500),
                                     ),
                                   ],
@@ -343,10 +506,30 @@ class _LoginPageState extends State<LoginPage> {
                                             height: 24,
                                             child: CircularProgressIndicator(color: Color(0xFF003064), strokeWidth: 2.5),
                                           )
-                                        : const Text(
-                                            'Sign in',
-                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                                        : Text(
+                                            AppLocale.t('login'),
+                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                                           ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                // Google Login Button
+                                SizedBox(
+                                  height: 56,
+                                  width: double.infinity,
+                                  child: OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      side: BorderSide(color: Colors.white.withOpacity(0.5)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                    ),
+                                    onPressed: _isLoading ? null : _loginWithGoogle,
+                                    child: Text(
+                                      AppLocale.t('login_with_google'),
+                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 40),

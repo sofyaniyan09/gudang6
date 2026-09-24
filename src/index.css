@@ -2,8 +2,212 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   Theme System — CSS Custom Properties (Light / Dark)
+   The <html> element uses class="dark" for dark mode (default).
+   Removing the class switches to light mode.
+   ============================================================ */
+
+@layer base {
+  /* ---- LIGHT MODE (default when `dark` class is absent) ---- */
+  :root {
+    --color-page-bg: #f5f7fb;
+    --color-page-text: #1a1c23;
+    --color-surface: #ffffff;
+    --color-surface-dim: #e8eaf0;
+    --color-surface-container: #f0f1f5;
+    --color-surface-container-low: #f5f6fa;
+    --color-surface-container-high: #eaecf2;
+    --color-surface-container-highest: #e0e2ea;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-variant: #e0e2ea;
+    --color-on-surface: #1a1c23;
+    --color-on-surface-variant: #2d3038;
+    --color-outline: #6b7185;
+    --color-outline-variant: #c8cdd8;
+    --color-border: rgba(0, 0, 0, 0.10);
+    --color-card-bg: rgba(255, 255, 255, 0.85);
+    --color-card-border: rgba(0, 0, 0, 0.08);
+    --color-card-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    --color-glass-bg: rgba(255, 255, 255, 0.7);
+    --color-glass-border: rgba(0, 0, 0, 0.08);
+    --color-glass-text: #1a1c23;
+    --color-input-bg: #ffffff;
+    --color-input-border: rgba(0, 0, 0, 0.15);
+    --color-input-text: #1a1c23;
+    --color-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+    --color-scrollbar-hover: rgba(0, 0, 0, 0.3);
+    --color-header-bg: rgba(245, 247, 251, 0.90);
+    --color-sidebar-bg: rgba(240, 242, 248, 0.95);
+    --color-bottomnav-bg: #f0f1f5;
+    --color-bottomnav-border: #dde0e8;
+    --color-radial-glow: rgba(100, 140, 200, 0.06);
+    --color-primary: #003064;
+    --color-primary-text: #ffffff;
+  }
+
+  /* ---- DARK MODE ---- */
+  .dark {
+    --color-page-bg: #10131b;
+    --color-page-text: #e0e2ed;
+    --color-surface: #10131b;
+    --color-surface-dim: #10131b;
+    --color-surface-container: #1c2027;
+    --color-surface-container-low: #181c23;
+    --color-surface-container-high: #262a32;
+    --color-surface-container-highest: #31353d;
+    --color-surface-container-lowest: #0b0e15;
+    --color-on-surface: #e0e2ed;
+    --color-on-surface-variant: #c0c6d6;
+    --color-outline: #8b91a0;
+    --color-outline-variant: #414754;
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-card-bg: rgba(255, 255, 255, 0.05);
+    --color-card-border: rgba(255, 255, 255, 0.15);
+    --color-card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    --color-glass-bg: rgba(255, 255, 255, 0.05);
+    --color-glass-border: rgba(255, 255, 255, 0.15);
+    --color-glass-text: white;
+    --color-input-bg: rgba(255, 255, 255, 0.05);
+    --color-input-border: rgba(255, 255, 255, 0.2);
+    --color-input-text: white;
+    --color-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --color-scrollbar-hover: rgba(255, 255, 255, 0.3);
+    --color-header-bg: rgba(16, 19, 27, 0.8);
+    --color-sidebar-bg: rgba(11, 14, 21, 0.8);
+    --color-bottomnav-bg: #24262f;
+    --color-bottomnav-border: #10131b;
+    --color-radial-glow: rgba(170, 199, 255, 0.08);
+    --color-primary: #aac7ff;
+    --color-primary-text: #003064;
+  }
+
+  /* Apply theme variables to base elements */
+  html, body {
+    background-color: var(--color-page-bg) !important;
+    color: var(--color-page-text) !important;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  /* Subtle radial glow follows theme */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 50% -20%, var(--color-radial-glow) 0%, transparent 60%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* ---- Light mode overrides for Tailwind token classes ---- */
+  /* Backgrounds */
+  :root:not(.dark) .bg-background { background-color: var(--color-page-bg) !important; }
+  :root:not(.dark) .bg-surface { background-color: var(--color-surface) !important; }
+  :root:not(.dark) .bg-surface-container { background-color: var(--color-surface-container) !important; }
+  :root:not(.dark) .bg-surface-container-low { background-color: var(--color-surface-container-low) !important; }
+  :root:not(.dark) .bg-surface-container-high { background-color: var(--color-surface-container-high) !important; }
+  :root:not(.dark) .bg-surface-container-highest { background-color: var(--color-surface-container-highest) !important; }
+  :root:not(.dark) .bg-surface-container-lowest { background-color: var(--color-surface-container-lowest) !important; }
+  :root:not(.dark) .bg-surface-container-lowest\/30 { background-color: rgba(255,255,255,0.5) !important; }
+  :root:not(.dark) .bg-surface\/50 { background-color: rgba(255,255,255,0.5) !important; }
+
+  /* Text */
+  :root:not(.dark) .text-on-surface { color: var(--color-on-surface) !important; }
+  :root:not(.dark) .text-on-surface-variant { color: var(--color-on-surface-variant) !important; }
+  :root:not(.dark) .text-on-background { color: var(--color-page-text) !important; }
+  :root:not(.dark) .text-outline { color: var(--color-outline) !important; }
+  
+  /* Borders */
+  :root:not(.dark) .border-surface-variant { border-color: var(--color-outline-variant) !important; }
+  :root:not(.dark) .border-white\/5, 
+  :root:not(.dark) .border-white\/10 { border-color: var(--color-border) !important; }
+  :root:not(.dark) .divide-surface-variant > * + * { border-color: var(--color-outline-variant) !important; }
+
+  /* Hover overrides */
+  :root:not(.dark) .hover\:bg-white\/5:hover { background-color: rgba(0, 0, 0, 0.08) !important; }
+  :root:not(.dark) .hover\:text-on-surface:hover { color: var(--color-on-surface) !important; }
+  :root:not(.dark) .hover\:bg-surface-container-low:hover { background-color: var(--color-surface-container-high) !important; }
+  :root:not(.dark) .hover\:bg-surface-container-low\/50:hover { background-color: var(--color-surface-container-high) !important; }
+  :root:not(.dark) .hover\:bg-surface-container:hover { background-color: var(--color-surface-container-highest) !important; }
+
+  /* Sidebar & Primary overrides */
+  :root:not(.dark) .text-primary { color: #00468d !important; }
+  :root:not(.dark) .bg-primary\/10 { background-color: rgba(0, 70, 141, 0.1) !important; }
+  :root:not(.dark) .border-primary\/20 { border-color: rgba(0, 70, 141, 0.2) !important; }
+  :root:not(.dark) .hover\:text-primary:hover { color: #00468d !important; }
+}
+/* ============================================================
+   Glass / Card Overrides — Now use CSS Variables
+   ============================================================ */
+.glass-card, .glass-panel, .ios-card {
+  background: var(--color-glass-bg) !important;
+  backdrop-filter: blur(40px) !important;
+  -webkit-backdrop-filter: blur(40px) !important;
+  border: 1px solid var(--color-glass-border) !important;
+  border-radius: 20px;
+  box-shadow: var(--color-card-shadow) !important;
+  transition: all 0.3s ease;
+  color: var(--color-glass-text) !important;
+}
+
+.glass-card *, .glass-panel *, .ios-card * {
+  color: inherit;
+}
+
+.glass-input {
+  background: var(--color-input-bg) !important;
+  border: 1px solid var(--color-input-border) !important;
+  color: var(--color-input-text) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* ============================================================
+   Scrollbar — Theme-aware
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-hover);
+}
+
+/* ============================================================
+   Material Icons base
+   ============================================================ */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.icon-filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ============================================================
+   Utility Classes
+   ============================================================ */
 @layer utilities {
   .text-shadow-sm {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   }
+}
+
+/* ============================================================
+   Theme Toggle Button Animation
+   ============================================================ */
+.theme-toggle-icon {
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.dark .theme-toggle-icon {
+  transform: rotate(180deg);
 }

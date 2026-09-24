@@ -5,6 +5,7 @@ import '../utils/route_observer.dart';
 import '../utils/ocr_service.dart';
 import '../main.dart';
 import 'scanned_containers_page.dart';
+import '../utils/app_locale.dart';
 
 class ScannerPage extends StatefulWidget {
   const ScannerPage({super.key});
@@ -15,9 +16,9 @@ class ScannerPage extends StatefulWidget {
 
 class _ScannerPageState extends State<ScannerPage> with RouteAware, TitleUpdater<ScannerPage> {
   @override
-  String get pageTitle => 'Scanner OCR';
+  String get pageTitle => AppLocale.t('scanner_ocr');
   @override
-  String? get pageSubtitle => 'Pindai Shipping Mark';
+  String? get pageSubtitle => AppLocale.t('scan_shipping_mark');
   
   bool _isProcessing = false;
   String _statusMessage = '';
@@ -27,7 +28,7 @@ class _ScannerPageState extends State<ScannerPage> with RouteAware, TitleUpdater
   Future<void> _startScan() async {
     setState(() {
       _isProcessing = true;
-      _statusMessage = 'Menyiapkan kamera...';
+      _statusMessage = AppLocale.t('preparing_camera');
     });
 
     try {
@@ -47,31 +48,31 @@ class _ScannerPageState extends State<ScannerPage> with RouteAware, TitleUpdater
       }
 
       setState(() {
-        _statusMessage = 'Mengubah format gambar...';
+        _statusMessage = AppLocale.t('formatting_image');
       });
 
       final bytes = await photo.readAsBytes();
       final base64Image = base64Encode(bytes);
 
       setState(() {
-        _statusMessage = 'Memproses OCR (Membaca Teks)...';
+        _statusMessage = AppLocale.t('processing_ocr');
       });
 
       String? text;
       try {
         text = await OcrService.extractTextFromBase64(base64Image);
       } catch (ocrError) {
-        _showError('OCR Error: $ocrError');
+        _showError('${AppLocale.t('ocr_error')}$ocrError');
         return;
       }
 
       if (text == null || text.trim().isEmpty) {
-        _showError('Tidak ada teks yang terdeteksi dari foto.\n\n(OCR returned empty result)');
+        _showError(AppLocale.t('no_text_detected'));
         return;
       }
 
       setState(() {
-        _statusMessage = 'Mencari kecocokan di database...';
+        _statusMessage = AppLocale.t('searching_database');
       });
 
       // Fetch distinct nama_material
@@ -115,11 +116,11 @@ class _ScannerPageState extends State<ScannerPage> with RouteAware, TitleUpdater
           ),
         );
       } else {
-        _showError('Tidak ditemukan barang yang cocok dengan hasil pindaian:\n\n$text');
+        _showError('${AppLocale.t('no_match_found')}$text');
       }
 
     } catch (e) {
-      _showError('Terjadi kesalahan: $e');
+      _showError('${AppLocale.t('error_occurred')}$e');
     }
   }
 
@@ -131,13 +132,13 @@ class _ScannerPageState extends State<ScannerPage> with RouteAware, TitleUpdater
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF101319),
-        title: const Text('Gagal', style: TextStyle(color: Colors.white)),
-        content: Text(msg, style: const TextStyle(color: Color(0xFFC0C6D6))),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(AppLocale.t('failed'), style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        content: Text(msg, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(color: Color(0xFF3E90FF))),
+            child: Text('OK', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           ),
         ],
       ),
@@ -151,11 +152,11 @@ class _ScannerPageState extends State<ScannerPage> with RouteAware, TitleUpdater
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const CircularProgressIndicator(color: Color(0xFF3E90FF)),
-                const SizedBox(height: 24),
+                CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                SizedBox(height: 24),
                 Text(
                   _statusMessage,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                   ),
@@ -166,34 +167,34 @@ class _ScannerPageState extends State<ScannerPage> with RouteAware, TitleUpdater
           : Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.document_scanner_outlined,
                   size: 100,
-                  color: Color(0xFFC0C6D6),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Pindai Shipping Mark\nuntuk mencari barang',
+                SizedBox(height: 24),
+                Text(
+                  AppLocale.t('scan_shipping_mark_desc'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFFC0C6D6),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 32),
                 ElevatedButton.icon(
                   onPressed: _startScan,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3E90FF),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text(
-                    'Buka Kamera',
+                  icon: Icon(Icons.camera_alt),
+                  label: Text(
+                    AppLocale.t('open_camera'),
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),

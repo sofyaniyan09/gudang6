@@ -21,7 +21,7 @@ class ObsidianScaffold extends StatelessWidget {
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
-      backgroundColor: const Color(0xFF10131B), // Background Color
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Background Color
       appBar: appBar,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
@@ -51,10 +51,10 @@ class ObsidianScaffold extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFAAC7FF).withOpacity(0.08),
+                    Theme.of(context).colorScheme.primary.withOpacity(0.08),
                     Colors.transparent,
                   ],
-                  stops: const [0.0, 0.6],
+                  stops: [0.0, 0.6],
                 ),
               ),
             ),

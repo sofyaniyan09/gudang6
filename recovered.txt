@@ -1,0 +1,313 @@
+Created At: 2026-07-08T00:30:25Z
+Completed At: 2026-07-08T00:30:25Z
+File Path: `file:///Users/user/Documents/gudang%206/src/components/Navigation.js`
+Total Lines: 659
+Total Bytes: 35381
+Showing lines 150 to 230
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+150:               <div class="flex items-center gap-4">
+151:                 <div class="w-12 h-12 rounded-full bg-surface-container-lowest border border-white/10 flex items-center justify-center shrink-0 overflow-hidden relative group cursor-pointer" id="btn-change-avatar" title="Ubah Foto Profil">
+152:                   <img src="" id="settings-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar">
+153:                   <span class="material-symbols-outlined text-3xl text-on-surface-variant" id="settings-avatar-icon">person</span>
+154:                   <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition-all">
+155:                      <span class="material-symbols-outlined text-white text-[20px]">add_a_photo</span>
+156:                   </div>
+157:                   <input type="file" id="input-avatar-upload" accept="image/*" class="hidden">
+158:                 </div>
+159:                 <div class="min-w-0">
+160:                   <h2 class="text-[17px] font-semibold tracking-tight text-on-surface truncate" id="settings-profile-name">Pengguna</h2>
+161:                   <p class="text-[12px] text-on-surface-variant mt-0.5 truncate" id="settings-profile-role">Akun Gudang, Akses, dll</p>
+162:                 </div>
+163:               </div>
+164:             </div>
+165:             
+166:             <!-- Group 1 -->
+167:             <div class="bg-surface-container-highest rounded-[16px] overflow-hidden flex flex-col shadow-sm border border-white/5">
+168:                 <!-- Mode Gelap -->
+169:                 <div class="flex items-center justify-between p-3 px-4 border-b border-white/5 hover:bg-surface-container-lowest/50 transition-colors cursor-pointer" id="panel-theme-row">
+170:                     <div class="flex items-center gap-3">
+171:                       <div class="w-[32px] h-[32px] rounded-[10px] bg-indigo-500 text-white flex items-center justify-center shadow-sm shrink-0">
+172:                         <span class="material-symbols-outlined text-[18px]">dark_mode</span>
+173:                       </div>
+174:                       <span class="text-[15px] font-medium text-on-surface tracking-tight" id="panel-theme-label">Mode Gelap</span>
+175:                     </div>
+176:                     <!-- Toggle -->
+177:                     <button id="panel-theme-toggle" class="relative inline-flex h-[28px] w-[48px] shrink-0 items-center rounded-full transition-colors duration-300">
+178:                       <span class="inline-block h-[24px] w-[24px] transform rounded-full bg-white transition-transform duration-300 shadow-sm pointer-events-none" id="panel-theme-knob"></span>
+179:                     </button>
+180:                 </div>
+181:                 <!-- Bahasa -->
+182:                 <div class="flex items-center justify-between p-3 px-4 border-b border-white/5 hover:bg-surface-container-lowest/50 transition-colors cursor-pointer">
+183:                     <div class="flex items-center gap-3">
+184:                       <div class="w-[32px] h-[32px] rounded-[10px] bg-blue-500 text-white flex items-center justify-center shadow-sm shrink-0">
+185:                         <span class="material-symbols-outlined text-[18px]">language</span>
+186:                       </div>
+187:                       <span class="text-[15px] font-medium text-on-surface tracking-tight">Bahasa</span>
+188:                     </div>
+189:                     <div class="flex items-center gap-1 shrink-0">
+190:                       <span class="text-[14px] text-on-surface-variant tracking-tight mr-1">Indonesia</span>
+191:                       <span class="material-symbols-outlined text-on-surface-variant text-xl">chevron_right</span>
+192:                     </div>
+193:                 </div>
+194: 
+195:                 <hr class="border-white/5 my-2">
+196:                   
+197:                 <div id="btn-link-google" class="flex items-center gap-3 p-3 px-4 hover:bg-surface-container-high transition-colors cursor-pointer group">
+198:                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-[20px] h-[20px] group-hover:scale-110 transition-transform">
+199:                     <span class="font-medium text-on-surface text-[14px]">Tautkan Akun Google</span>
+200:                 </div>
+201: 
+202:                 <!-- Logout -->
+203:                 <div id="btn-logout" class="flex items-center gap-3 p-3 px-4 hover:bg-error/10 transition-colors cursor-pointer group">
+204:                     <span class="material-symbols-outlined text-[20px] text-error group-hover:scale-110 transition-transform">logout</span>
+205:                     <span class="text-[14px] font-bold text-error flex-1">Logout</span>
+206:                 </div>
+207:             </div>
+208:         </div>
+209:     </div>
+210:     `;
+211:     
+212:     if (!document.getElementById('settings-panel')) {
+213:         document.body.insertAdjacentHTML('beforeend', settingsPopupHTML);
+214:     }
+215: 
+216:     document.body.insertAdjacentHTML('beforeend', bottomNavHTML);
+217: 
+218:     // 5. Highlight Active Link
+219:     highlightActiveLinks(window.location.pathname);
+220: 
+221:     // 6. Add View Transition meta tag
+222:     if (!document.querySelector('meta[name="view-transition"]')) {
+223:         const meta = document.createElement('meta');
+224:         meta.name = 'view-transition';
+225:         meta.content = 'same-origin';
+226:         document.head.appendChild(meta);
+227:     }
+228: 
+229:     // 7. Inject CSS for sidebar collapse & SPA transitions (NO body fadeIn!)
+230:     const style = document.createElement('style');
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+---
+Created At: 2026-07-08T00:37:46Z
+Completed At: 2026-07-08T00:37:47Z
+File Path: `file:///Users/user/Documents/gudang%206/src/components/Navigation.js`
+Total Lines: 659
+Total Bytes: 35381
+Showing lines 150 to 250
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+150:               <div class="flex items-center gap-4">
+151:                 <div class="w-12 h-12 rounded-full bg-surface-container-lowest border border-white/10 flex items-center justify-center shrink-0 overflow-hidden relative group cursor-pointer" id="btn-change-avatar" title="Ubah Foto Profil">
+152:                   <img src="" id="settings-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar">
+153:                   <span class="material-symbols-outlined text-3xl text-on-surface-variant" id="settings-avatar-icon">person</span>
+154:                   <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition-all">
+155:                      <span class="material-symbols-outlined text-white text-[20px]">add_a_photo</span>
+156:                   </div>
+157:                   <input type="file" id="input-avatar-upload" accept="image/*" class="hidden">
+158:                 </div>
+159:                 <div class="min-w-0">
+160:                   <h2 class="text-[17px] font-semibold tracking-tight text-on-surface truncate" id="settings-profile-name">Pengguna</h2>
+161:                   <p class="text-[12px] text-on-surface-variant mt-0.5 truncate" id="settings-profile-role">Akun Gudang, Akses, dll</p>
+162:                 </div>
+163:               </div>
+164:             </div>
+165:             
+166:             <!-- Group 1 -->
+167:             <div class="bg-surface-container-highest rounded-[16px] overflow-hidden flex flex-col shadow-sm border border-white/5">
+168:                 <!-- Mode Gelap -->
+169:                 <div class="flex items-center justify-between p-3 px-4 border-b border-white/5 hover:bg-surface-container-lowest/50 transition-colors cursor-pointer" id="panel-theme-row">
+170:                     <div class="flex items-center gap-3">
+171:                       <div class="w-[32px] h-[32px] rounded-[10px] bg-indigo-500 text-white flex items-center justify-center shadow-sm shrink-0">
+172:                         <span class="material-symbols-outlined text-[18px]">dark_mode</span>
+173:                       </div>
+174:                       <span class="text-[15px] font-medium text-on-surface tracking-tight" id="panel-theme-label">Mode Gelap</span>
+175:                     </div>
+176:                     <!-- Toggle -->
+177:                     <button id="panel-theme-toggle" class="relative inline-flex h-[28px] w-[48px] shrink-0 items-center rounded-full transition-colors duration-300">
+178:                       <span class="inline-block h-[24px] w-[24px] transform rounded-full bg-white transition-transform duration-300 shadow-sm pointer-events-none" id="panel-theme-knob"></span>
+179:                     </button>
+180:                 </div>
+181:                 <!-- Bahasa -->
+182:                 <div class="flex items-center justify-between p-3 px-4 border-b border-white/5 hover:bg-surface-container-lowest/50 transition-colors cursor-pointer">
+183:                     <div class="flex items-center gap-3">
+184:                       <div class="w-[32px] h-[32px] rounded-[10px] bg-blue-500 text-white flex items-center justify-center shadow-sm shrink-0">
+185:                         <span class="material-symbols-outlined text-[18px]">language</span>
+186:                       </div>
+187:                       <span class="text-[15px] font-medium text-on-surface tracking-tight">Bahasa</span>
+188:                     </div>
+189:                     <div class="flex items-center gap-1 shrink-0">
+190:                       <span class="text-[14px] text-on-surface-variant tracking-tight mr-1">Indonesia</span>
+191:                       <span class="material-symbols-outlined text-on-surface-variant text-xl">chevron_right</span>
+192:                     </div>
+193:                 </div>
+194: 
+195:                 <hr class="border-white/5 my-2">
+196:                   
+197:                 <div id="btn-link-google" class="flex items-center gap-3 p-3 px-4 hover:bg-surface-container-high transition-colors cursor-pointer group">
+198:                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-[20px] h-[20px] group-hover:scale-110 transition-transform">
+199:                     <span class="font-medium text-on-surface text-[14px]">Tautkan Akun Google</span>
+200:                 </div>
+201: 
+202:                 <!-- Logout -->
+203:                 <div id="btn-logout" class="flex items-center gap-3 p-3 px-4 hover:bg-error/10 transition-colors cursor-pointer group">
+204:                     <span class="material-symbols-outlined text-[20px] text-error group-hover:scale-110 transition-transform">logout</span>
+205:                     <span class="text-[14px] font-bold text-error flex-1">Logout</span>
+206:                 </div>
+207:             </div>
+208:         </div>
+209:     </div>
+210:     `;
+211:     
+212:     if (!document.getElementById('settings-panel')) {
+213:         document.body.insertAdjacentHTML('beforeend', settingsPopupHTML);
+214:     }
+215: 
+216:     document.body.insertAdjacentHTML('beforeend', bottomNavHTML);
+217: 
+218:     // 5. Highlight Active Link
+219:     highlightActiveLinks(window.location.pathname);
+220: 
+221:     // 6. Add View Transition meta tag
+222:     if (!document.querySelector('meta[name="view-transition"]')) {
+223:         const meta = document.createElement('meta');
+224:         meta.name = 'view-transition';
+225:         meta.content = 'same-origin';
+226:         document.head.appendChild(meta);
+227:     }
+228: 
+229:     // 7. Inject CSS for sidebar collapse & SPA transitions (NO body fadeIn!)
+230:     const style = document.createElement('style');
+231:     style.id = 'nav-dynamic-styles';
+232:     style.innerHTML = `
+233:         /* Sidebar toggle pill — hidden by default, shows on sidebar hover */
+234:         #app-sidebar { transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+235:         #app-sidebar .sidebar-toggle-btn { opacity: 0; transition: opacity 0.2s ease, background 0.2s ease; }
+236:         #app-sidebar:hover .sidebar-toggle-btn { opacity: 1; }
+237: 
+238:         /* Collapsed sidebar state */
+239:         .sidebar-collapsed #app-sidebar { width: 5.5rem; }
+240:         .sidebar-collapsed #app-sidebar .sidebar-text { opacity: 0; width: 0; visibility: hidden; }
+241:         .sidebar-collapsed #app-sidebar .sidebar-toggle-btn .toggle-chevron { transform: rotate(180deg); }
+242: 
+243:         /* Content wrapper slide */
+244:         .content-wrapper { transition: padding-left 0.4s cubic-bezier(0.25, 1, 0.5, 1), margin-left 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+245:         @media (min-width: 768px) {
+246:             .sidebar-collapsed .content-wrapper.md\\:pl-64 { padding-left: 5.5rem !important; }
+247:             .sidebar-collapsed .content-wrapper.md\\:ml-64 { margin-left: 5.5rem !important; }
+248:         }
+249: 
+250:         /* SPA page transition — only animates the main content area, NOT sidebar/header */
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+---
+Created At: 2026-07-08T00:40:19Z
+Completed At: 2026-07-08T00:40:20Z
+File Path: `file:///Users/user/Documents/gudang%206/src/components/Navigation.js`
+Total Lines: 659
+Total Bytes: 35445
+Showing lines 500 to 600
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+500: function highlightActiveLinks(path) {
+501:     // Desktop sidebar
+502:     document.querySelectorAll('#sidebar-nav-links .nav-link').forEach(link => {
+503:         const dp = link.getAttribute('data-path');
+504:         const isActive = path.endsWith(dp) || (path === '/' && dp === '/dashboard.html');
+505:         if (isActive) {
+506:             link.classList.remove('text-on-surface-variant', 'hover:text-on-surface', 'hover:bg-white/5');
+507:             link.classList.add('bg-primary/10', 'border', 'border-primary/20', 'text-primary');
+508:             link.querySelector('.material-symbols-outlined')?.classList.add('icon-filled');
+509:         } else {
+510:             link.classList.add('text-on-surface-variant', 'hover:text-on-surface', 'hover:bg-white/5');
+511:             link.classList.remove('bg-primary/10', 'border', 'border-primary/20', 'text-primary');
+512:             link.querySelector('.material-symbols-outlined')?.classList.remove('icon-filled');
+513:         }
+514:     });
+515: 
+516:     // Mobile bottom nav
+517:     document.querySelectorAll('#mobile-bottom-nav .nav-link-mobile').forEach(link => {
+518:         const dp = link.getAttribute('data-path');
+519:         const isActive = path.endsWith(dp) || (path === '/' && dp === '/dashboard.html');
+520:         if (isActive) {
+521:             if (dp === '/kelola_kapal.html') {
+522:                 link.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+523:                 link.classList.add('bg-[#a8c7fa]', 'text-[#041e49]');
+524:             } else {
+525:                 link.classList.add('text-primary');
+526:                 link.classList.remove('text-on-surface-variant');
+527:             }
+528:             link.querySelector('.material-symbols-outlined')?.classList.add('icon-filled');
+529:         } else {
+530:             if (dp === '/kelola_kapal.html') {
+531:                 link.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+532:                 link.classList.remove('bg-[#a8c7fa]', 'text-[#041e49]');
+533:             } else {
+534:                 link.classList.remove('text-primary');
+535:                 link.classList.add('text-on-surface-variant');
+536:             }
+537:             link.querySelector('.material-symbols-outlined')?.classList.remove('icon-filled');
+538:         }
+539:     });
+540: }
+541: 
+542: // ============================================================
+543: // SPA Router — intercepts ALL internal links, swaps <main> only
+544: // ============================================================
+545: const SPA_PAGES = ['dashboard.html', 'kelola_kapal.html', 'user_management.html', 'staff_dashboard.html'];
+546: 
+547: function isSPALink(href) {
+548:     if (!href) return false;
+549:     try {
+550:         const url = new URL(href, window.location.origin);
+551:         // Must be same origin
+552:         if (url.origin !== window.location.origin) return false;
+553:         // Must be one of our known SPA pages
+554:         return SPA_PAGES.some(page => url.pathname.endsWith(page));
+555:     } catch {
+556:         return false;
+557:     }
+558: }
+559: 
+560: export function setupSPA() {
+561:     const performNavigation = async (url, addToHistory = true) => {
+562:         try {
+563:             const response = await fetch(url);
+564:             if (!response.ok) throw new Error('Network error');
+565:             const html = await response.text();
+566: 
+567:             const parser = new DOMParser();
+568:             const doc = parser.parseFromString(html, 'text/html');
+569:             const newMain = doc.querySelector('#main-content main');
+570: 
+571:             if (!newMain) {
+572:                 // Fallback: page structure doesn't match, do a full reload
+573:                 window.location.href = url;
+574:                 return;
+575:             }
+576: 
+577:             const swapContent = () => {
+578:                 const currentMain = document.querySelector('#main-content main');
+579:                 if (!currentMain) {
+580:                     window.location.href = url;
+581:                     return;
+582:                 }
+583:                 currentMain.innerHTML = newMain.innerHTML;
+584:                 currentMain.className = newMain.className;
+585:                 document.title = doc.title;
+586: 
+587:                 if (addToHistory) {
+588:                     window.history.pushState({ path: url }, '', url);
+589:                 }
+590: 
+591:                 highlightActiveLinks(window.location.pathname);
+592:                 updateGlobalHeader();
+593: 
+594:                 // Load page-specific scripts if they haven't been loaded yet
+595:                 const newScripts = doc.querySelectorAll('script[src]');
+596:                 newScripts.forEach(script => {
+597:                     const src = script.getAttribute('src');
+598:                     if (!document.querySelector(`script[src="${src}"]`)) {
+599:                         const newScript = document.createElement('script');
+600:                         newScript.src = src;
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+---

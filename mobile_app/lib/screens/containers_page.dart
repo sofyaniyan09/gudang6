@@ -6,6 +6,7 @@ import 'items_page.dart';
 import 'dashboard_page.dart';
 import '../widgets/obsidian_scaffold.dart';
 import '../widgets/glass_card.dart';
+import '../utils/app_locale.dart';
 
 class ContainersPage extends StatefulWidget {
   final String namaFile;
@@ -23,7 +24,7 @@ class ContainersPage extends StatefulWidget {
 
 class _ContainersPageState extends State<ContainersPage> with RouteAware, TitleUpdater<ContainersPage> {
   @override
-  String get pageTitle => 'Daftar Kontainer';
+  String get pageTitle => AppLocale.t('container_list');
   @override
   String? get pageSubtitle => widget.cleanName;
   bool _isLoading = true;
@@ -76,7 +77,7 @@ class _ContainersPageState extends State<ContainersPage> with RouteAware, TitleU
       for (var row in allData) {
         var containerNo = row['nomor_kontainer']?.toString();
         if (containerNo == null || containerNo.trim().isEmpty) {
-          containerNo = 'Tanpa Kontainer';
+          containerNo = AppLocale.t('no_container');
         }
         final status = row['status_inspeksi'] ?? 'Menunggu Inspeksi';
         final tgl = row['tanggal_inspeksi'];
@@ -138,7 +139,7 @@ class _ContainersPageState extends State<ContainersPage> with RouteAware, TitleU
       if (mounted) {
         if (_containers.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Koneksi tidak stabil. Gagal memuat data kontainer.')),
+            SnackBar(content: Text(AppLocale.t('connection_unstable'))),
           );
         }
       }
@@ -164,19 +165,19 @@ class _ContainersPageState extends State<ContainersPage> with RouteAware, TitleU
           ValueListenableBuilder<bool>(
             valueListenable: globalSearchActive,
             builder: (context, isSearchActive, child) {
-              if (!isSearchActive) return const SizedBox.shrink();
+              if (!isSearchActive) return SizedBox.shrink();
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                 child: TextField(
                   controller: _searchController,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 decoration: InputDecoration(
-                  hintText: 'Cari nomor kontainer...',
-                  hintStyle: const TextStyle(color: Colors.grey),
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                  hintText: AppLocale.t('search_container'),
+                  hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   suffixIcon: _searchQuery.isNotEmpty 
                       ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
+                          icon: Icon(Icons.clear, color: Theme.of(context).colorScheme.onSurfaceVariant),
                           onPressed: () {
                             _searchController.clear();
                             setState(() {
@@ -186,7 +187,7 @@ class _ContainersPageState extends State<ContainersPage> with RouteAware, TitleU
                         ) 
                       : null,
                   filled: true,
-                  fillColor: const Color(0xFF2C313C),
+                  fillColor: Theme.of(context).colorScheme.surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -204,12 +205,12 @@ class _ContainersPageState extends State<ContainersPage> with RouteAware, TitleU
           // List Content
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFAAC7FF)))
+                ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
                 : displayedContainers.isEmpty
-                    ? const Center(child: Text('Tidak ada kontainer ditemukan.', style: TextStyle(color: Colors.grey)))
+                    ? Center(child: Text(AppLocale.t('no_container_found'), style: TextStyle(color: Colors.grey)))
                     : RefreshIndicator(
                         onRefresh: _fetchContainers,
-                        color: const Color(0xFF0057C2),
+                        color: Theme.of(context).colorScheme.primary,
                         child: ListView.builder(
                           padding: const EdgeInsets.all(24),
                           itemCount: displayedContainers.length,
@@ -221,7 +222,7 @@ class _ContainersPageState extends State<ContainersPage> with RouteAware, TitleU
                             final int progressPercent = (progress * 100).round();
                             
                             final latestDate = container['latest_date'] as DateTime;
-                            String latestDateStr = 'Belum diupdate';
+                            String latestDateStr = AppLocale.t('not_updated_yet');
                             if (latestDate.millisecondsSinceEpoch > 0) {
                               latestDateStr = '${latestDate.day.toString().padLeft(2, '0')}/${latestDate.month.toString().padLeft(2, '0')}/${latestDate.year} ${latestDate.hour.toString().padLeft(2, '0')}:${latestDate.minute.toString().padLeft(2, '0')}';
                             }
@@ -249,60 +250,60 @@ class _ContainersPageState extends State<ContainersPage> with RouteAware, TitleU
                                       width: 48,
                                       height: 48,
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF3E90FF).withOpacity(0.2),
+                                        color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Icon(Icons.inventory_2, color: Color(0xFFAAC7FF), size: 24),
+                                      child: Icon(Icons.inventory_2, color: Theme.of(context).colorScheme.primary, size: 24),
                                     ),
-                                    const SizedBox(width: 16),
+                                    SizedBox(width: 16),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             container['nomor_kontainer'],
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
-                                              color: Color(0xFFE0E2ED),
+                                              color: Theme.of(context).colorScheme.onSurface,
                                             ),
                                           ),
-                                          const SizedBox(height: 2),
+                                          SizedBox(height: 2),
                                           Text(
-                                            'Tipe: ${container['tipe']} • $total Item',
-                                            style: const TextStyle(fontSize: 13, color: Color(0xFFC0C6D6)),
+                                            '${AppLocale.t('type')}: ${container['tipe']} • $total ${AppLocale.t('item')}',
+                                            style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                           ),
-                                          const SizedBox(height: 2),
+                                          SizedBox(height: 2),
                                           Row(
                                             children: [
-                                              const Icon(Icons.access_time, size: 12, color: Color(0xFF8B91A0)),
-                                              const SizedBox(width: 4),
+                                              Icon(Icons.access_time, size: 12, color: Color(0xFF8B91A0)),
+                                              SizedBox(width: 4),
                                               Text(
-                                                'Update: $latestDateStr',
-                                                style: const TextStyle(fontSize: 11, color: Color(0xFF8B91A0)),
+                                                '${AppLocale.t('update')}: $latestDateStr',
+                                                style: TextStyle(fontSize: 11, color: Color(0xFF8B91A0)),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 12),
+                                          SizedBox(height: 12),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
                                               Flexible(
                                                 child: Text(
-                                                  '$completed/$total item diinspeksi',
-                                                  style: const TextStyle(fontSize: 11, color: Color(0xFFC0C6D6)),
+                                                  '$completed/$total ${AppLocale.t('items_inspected')}',
+                                                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
-                                              const SizedBox(width: 4),
+                                              SizedBox(width: 4),
                                               Text(
                                                 '$progressPercent%',
-                                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFAAC7FF)),
+                                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 6),
+                                          SizedBox(height: 6),
                                           ClipRRect(
                                             borderRadius: BorderRadius.circular(4),
                                             child: LinearProgressIndicator(
@@ -315,8 +316,8 @@ class _ContainersPageState extends State<ContainersPage> with RouteAware, TitleU
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    const Icon(Icons.chevron_right, color: Color(0xFF414754), size: 20),
+                                    SizedBox(width: 8),
+                                    Icon(Icons.chevron_right, color: Theme.of(context).dividerColor, size: 20),
                                     ],
                                   ),
                                 ),

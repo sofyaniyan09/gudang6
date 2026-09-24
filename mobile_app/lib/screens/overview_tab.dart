@@ -5,6 +5,7 @@ import '../main.dart';
 import '../widgets/glass_card.dart';
 import 'package:intl/intl.dart';
 import 'items_page.dart';
+import '../utils/app_locale.dart';
 
 class OverviewTab extends StatefulWidget {
   const OverviewTab({super.key});
@@ -203,13 +204,13 @@ class _OverviewTabState extends State<OverviewTab> {
       
       String getDayName(int weekday) {
         switch (weekday) {
-          case 1: return 'Sen';
-          case 2: return 'Sel';
-          case 3: return 'Rab';
-          case 4: return 'Kam';
-          case 5: return 'Jum';
-          case 6: return 'Sab';
-          case 7: return 'Min';
+          case 1: return AppLocale.t('mon');
+          case 2: return AppLocale.t('tue');
+          case 3: return AppLocale.t('wed');
+          case 4: return AppLocale.t('thu');
+          case 5: return AppLocale.t('fri');
+          case 6: return AppLocale.t('sat');
+          case 7: return AppLocale.t('sun');
           default: return '';
         }
       }
@@ -217,7 +218,7 @@ class _OverviewTabState extends State<OverviewTab> {
       for (int i = 6; i >= 0; i--) {
         final d = todayStart.subtract(Duration(days: i));
         final dateStr = DateFormat('yyyy-MM-dd').format(d);
-        final label = i == 0 ? 'Hari Ini' : getDayName(d.weekday);
+        final label = i == 0 ? AppLocale.t('today') : getDayName(d.weekday);
         activity.add({
           'date': dateStr,
           'label': label,
@@ -261,7 +262,7 @@ class _OverviewTabState extends State<OverviewTab> {
       if (mounted) {
         if (_ongoingUpdates.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Koneksi tidak stabil. Gagal memuat data ringkasan.')),
+            SnackBar(content: Text(AppLocale.t('overview_error'))),
           );
         }
         setState(() {
@@ -274,8 +275,8 @@ class _OverviewTabState extends State<OverviewTab> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(
-          child: CircularProgressIndicator(color: Color(0xFFAAC7FF)));
+      return Center(
+          child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary));
     }
 
     return SingleChildScrollView(
@@ -292,15 +293,15 @@ class _OverviewTabState extends State<OverviewTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'STATUS UPDATE',
+                Text(
+                  AppLocale.t('status_update'),
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF8B91A0),
                       letterSpacing: 1.5),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 AspectRatio(
                   aspectRatio: 15 / 9,
                   child: Row(
@@ -322,13 +323,13 @@ class _OverviewTabState extends State<OverviewTab> {
                                 children: [
                                   Text(
                                     '$_totalContainers',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 20, // Diperkecil
                                         fontWeight: FontWeight.bold,
-                                        color: Color(0xFFE0E2ED)),
+                                        color: Theme.of(context).colorScheme.onSurface),
                                   ),
-                                  const Text(
-                                    'OVERALL',
+                                  Text(
+                                    AppLocale.t('overall'),
                                     style: TextStyle(
                                         fontSize: 8, // Diperkecil
                                         fontWeight: FontWeight.bold,
@@ -341,18 +342,18 @@ class _OverviewTabState extends State<OverviewTab> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         flex: 1, // Kanan: Keterangan (50%)
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLegend('Selesai', _selesai, const Color(0xFF4ADE80)),
-                            const SizedBox(height: 12),
-                            _buildLegend('On Proses', _onProses, const Color(0xFFFB923C)),
-                            const SizedBox(height: 12),
-                            _buildLegend('Belum Update', _belumDiupdate, const Color(0xFF3E90FF)),
+                            _buildLegend(AppLocale.t('done'), _selesai, const Color(0xFF4ADE80)),
+                            SizedBox(height: 12),
+                            _buildLegend(AppLocale.t('on_process'), _onProses, const Color(0xFFFB923C)),
+                            SizedBox(height: 12),
+                            _buildLegend(AppLocale.t('not_updated'), _belumDiupdate, Theme.of(context).colorScheme.primary),
                           ],
                         ),
                       ),
@@ -362,7 +363,7 @@ class _OverviewTabState extends State<OverviewTab> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
 
           // Aktivitas Line Chart
           GlassCard(
@@ -370,15 +371,15 @@ class _OverviewTabState extends State<OverviewTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'AKTIVITAS 7 HARI TERAKHIR',
+                Text(
+                  AppLocale.t('last_7_days'),
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF8B91A0),
                       letterSpacing: 1.5),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 AspectRatio(
                   aspectRatio: 15 / 9,
                   child: LineChart(
@@ -403,8 +404,8 @@ class _OverviewTabState extends State<OverviewTab> {
                             return lineBarsSpot.map((lineBarSpot) {
                               return LineTooltipItem(
                                 lineBarSpot.y.toInt().toString(),
-                                const TextStyle(
-                                    color: Color(0xFFE0E2ED), 
+                                TextStyle(
+                                    color: Theme.of(context).colorScheme.onSurface, 
                                     fontWeight: FontWeight.bold, 
                                     fontSize: 12),
                               );
@@ -431,11 +432,11 @@ class _OverviewTabState extends State<OverviewTab> {
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Text(
                                     _dailyActivity[value.toInt()]['label'],
-                                    style: const TextStyle(color: Color(0xFF8B91A0), fontSize: 11),
+                                    style: TextStyle(color: Color(0xFF8B91A0), fontSize: 11),
                                   ),
                                 );
                               }
-                              return const SizedBox();
+                              return SizedBox();
                             },
                           ),
                         ),
@@ -449,7 +450,7 @@ class _OverviewTabState extends State<OverviewTab> {
                         horizontalInterval: 10,
                         getDrawingHorizontalLine: (value) {
                           return FlLine(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
                             strokeWidth: 1,
                           );
                         },
@@ -462,23 +463,23 @@ class _OverviewTabState extends State<OverviewTab> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
 
           // Ongoing Updates
-          const Text(
-            'Ongoing Container Updates',
+          Text(
+            AppLocale.t('ongoing_updates'),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFFE0E2ED),
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           _ongoingUpdates.isEmpty
-              ? const Padding(
+              ? Padding(
                   padding: EdgeInsets.all(24.0),
                   child: Center(
-                      child: Text('Belum ada pembaruan kontainer.',
+                      child: Text(AppLocale.t('no_container_updates'),
                           style: TextStyle(color: Color(0xFF8B91A0)))),
                 )
               : ListView.builder(
@@ -529,10 +530,10 @@ class _OverviewTabState extends State<OverviewTab> {
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.03),
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.03),
                           borderRadius: BorderRadius.circular(16),
                           border:
-                              Border.all(color: Colors.white.withOpacity(0.05)),
+                              Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.05)),
                         ),
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -541,23 +542,23 @@ class _OverviewTabState extends State<OverviewTab> {
                             // ATAS: Nama Kontainer
                             Text(
                               item['nomor_kontainer']?.toString() ??
-                                  'Tanpa Nomor',
-                              style: const TextStyle(
+                                  AppLocale.t('unnamed'),
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFFE0E2ED),
+                                  color: Theme.of(context).colorScheme.onSurface,
                                   fontSize: 16),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             // ATAS: Nama Kapal (File)
                             Text(
                               item['nama_file']?.toString() ?? '',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: Color(0xFF8B91A0), fontSize: 12),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16),
                             
                             // BAWAH: Waktu Terakhir Update & Indikator (Progress Bar)
                             Row(
@@ -565,7 +566,7 @@ class _OverviewTabState extends State<OverviewTab> {
                               children: [
                                 Text(
                                   dateFormatted,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       color: Color(0xFF6B7280), fontSize: 11),
                                 ),
                                 SizedBox(
@@ -574,7 +575,7 @@ class _OverviewTabState extends State<OverviewTab> {
                                     value: (item['percentage'] as int? ?? 0) /
                                         100.0,
                                     backgroundColor:
-                                        Colors.white.withOpacity(0.1),
+                                        Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
                                     valueColor:
                                         AlwaysStoppedAnimation<Color>(statusColor),
                                     minHeight: 4,
@@ -598,7 +599,7 @@ class _OverviewTabState extends State<OverviewTab> {
     if (_totalContainers == 0) {
       return [
         PieChartSectionData(
-          color: Colors.white.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
           value: 1,
           title: '',
           radius: 40,
@@ -613,7 +614,7 @@ class _OverviewTabState extends State<OverviewTab> {
         value: value.toDouble(),
         title: pct >= 5 ? '${pct.round()}%' : '',
         radius: 28, // Diperkecil lagi agar sangat proporsional di layar kecil
-        titleStyle: const TextStyle(
+        titleStyle: TextStyle(
           fontSize: 10, // Diperkecil
           fontWeight: FontWeight.bold,
           color: Colors.white,
@@ -625,7 +626,7 @@ class _OverviewTabState extends State<OverviewTab> {
     return [
       if (_selesai > 0) createSection(const Color(0xFF4ADE80), _selesai),
       if (_onProses > 0) createSection(const Color(0xFFFB923C), _onProses),
-      if (_belumDiupdate > 0) createSection(const Color(0xFF3E90FF), _belumDiupdate),
+      if (_belumDiupdate > 0) createSection(Theme.of(context).colorScheme.primary, _belumDiupdate),
     ];
   }
 
@@ -641,20 +642,20 @@ class _OverviewTabState extends State<OverviewTab> {
             borderRadius: BorderRadius.circular(3),
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(color: Color(0xFFC0C6D6), fontSize: 10, fontWeight: FontWeight.w500),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.w500),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        const SizedBox(width: 4),
+        SizedBox(width: 4),
         Text(
           value.toString(),
-          style: const TextStyle(
-              color: Color(0xFFE0E2ED),
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
               fontSize: 12),
         ),
@@ -689,7 +690,7 @@ class _OverviewTabState extends State<OverviewTab> {
         show: true,
         getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
           radius: 4,
-          color: const Color(0xFF10131B),
+          color: Theme.of(context).scaffoldBackgroundColor,
           strokeWidth: 2.5,
           strokeColor: const Color(0xFF10B981),
         ),

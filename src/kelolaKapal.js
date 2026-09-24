@@ -113,7 +113,8 @@ async function initKelolaKapal() {
         const currentUser = await requireAuth();
         if (!currentUser) return;
         
-        setupRealtime();
+        // Mematikan realtime otomatis agar tidak merefresh tabel saat staf bekerja (sesuai permintaan user)
+        // setupRealtime();
 
     // Views
     const viewFiles = document.getElementById('ship-table-body')?.closest('.glass-panel');

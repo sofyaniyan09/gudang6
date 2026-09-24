@@ -10,6 +10,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'overview_tab.dart';
 import 'ship_tab.dart';
 import '../utils/route_observer.dart';
+import '../utils/app_locale.dart';
 
 class DashboardPage extends StatefulWidget {
   final int initialIndex;
@@ -30,7 +31,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<NavigatorState> _profileTabNavigatorKey =
       GlobalKey<NavigatorState>();
 
-  List<String?> _tabTitles = ['CC Penerimaan Material', 'Daftar Armada', 'Scanner', 'Profil'];
+  List<String?> _tabTitles = [AppLocale.t('reception'), AppLocale.t('fleet_list'), AppLocale.t('scanner'), AppLocale.t('profile')];
 
   @override
   void initState() {
@@ -101,7 +102,7 @@ class _DashboardPageState extends State<DashboardPage> {
       },
       child: ObsidianScaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFF10131B).withOpacity(0.6),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.6),
           flexibleSpace: ClipRect(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
@@ -120,7 +121,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   title == 'Profil';
               if (title != null && !isRoot) {
                 return IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Color(0xFFAAC7FF)),
+                  icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.primary),
                   onPressed: () {
                     final keys = [
                       _overviewTabNavigatorKey,
@@ -134,9 +135,21 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return Padding(
                 padding: const EdgeInsets.only(left: 24.0),
-                child: Image.asset(
-                  'assets/logo_transparent.png',
-                  height: 32,
+                child: ValueListenableBuilder<String?>(
+                  valueListenable: globalLogoUrl,
+                  builder: (context, logoUrl, child) {
+                    if (logoUrl != null && logoUrl.isNotEmpty) {
+                      return Image.network(
+                        logoUrl,
+                        height: 32,
+                        errorBuilder: (context, error, stackTrace) => Image.asset('assets/logo_transparent.png', height: 32),
+                      );
+                    }
+                    return Image.asset(
+                      'assets/logo_transparent.png',
+                      height: 32,
+                    );
+                  }
                 ),
               );
             },
@@ -179,19 +192,19 @@ class _DashboardPageState extends State<DashboardPage> {
                   children: [
                     Text(
                       titleToDisplay,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFE0E2ED)),
+                          color: Theme.of(context).colorScheme.onSurface),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       subtitleToDisplay,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.normal,
-                          color: Color(0xFFAAC7FF)),
+                          color: Theme.of(context).colorScheme.primary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -201,10 +214,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
               return Text(
                 titleToDisplay,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFE0E2ED)),
+                    color: Theme.of(context).colorScheme.onSurface),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               );
@@ -217,14 +230,14 @@ class _DashboardPageState extends State<DashboardPage> {
               builder: (context, title, child) {
                 if (title == 'Daftar Kontainer' || title == 'Data Barang') {
                   return IconButton(
-                    icon: const Icon(Icons.search,
-                        color: Color(0xFFAAC7FF), size: 28),
+                    icon: Icon(Icons.search,
+                        color: Theme.of(context).colorScheme.primary, size: 28),
                     onPressed: () {
                       globalSearchActive.value = !globalSearchActive.value;
                     },
                   );
                 }
-                return const SizedBox.shrink();
+                return SizedBox.shrink();
               },
             ),
             ValueListenableBuilder<String?>(
@@ -237,7 +250,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       return IconButton(
                         icon: Icon(
                           isAllSelected ? Icons.check_box : Icons.check_box_outline_blank,
-                          color: const Color(0xFFAAC7FF),
+                          color: Theme.of(context).colorScheme.primary,
                           size: 26,
                         ),
                         onPressed: () {
@@ -247,14 +260,14 @@ class _DashboardPageState extends State<DashboardPage> {
                     }
                   );
                 }
-                return const SizedBox.shrink();
+                return SizedBox.shrink();
               },
             ),
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: IconButton(
-                icon: const Icon(Icons.notifications_outlined,
-                    color: Color(0xFFAAC7FF), size: 28),
+                icon: Icon(Icons.notifications_outlined,
+                    color: Theme.of(context).colorScheme.primary, size: 28),
                 onPressed: () {},
               ),
             ),
@@ -275,34 +288,42 @@ class _DashboardPageState extends State<DashboardPage> {
                 _profileTabNavigatorKey, 'Profil', const ProfilePage()),
           ],
         ),
-        bottomNavigationBar: CurvedNavigationBar(
-          index: _selectedIndex,
-          height: 60.0,
-          items: <Widget>[
-            Icon(Icons.home_outlined,
-                size: 30,
-                color: _selectedIndex == 0
-                    ? const Color(0xFF003064)
-                    : Colors.white),
-            Icon(Icons.directions_boat_outlined,
-                size: 30,
-                color: _selectedIndex == 1
-                    ? const Color(0xFF003064)
-                    : Colors.white),
-            Icon(Icons.qr_code_scanner,
-                size: 30,
-                color: _selectedIndex == 2
-                    ? const Color(0xFF003064)
-                    : Colors.white),
-            Icon(Icons.person_outline,
-                size: 30,
-                color: _selectedIndex == 3
-                    ? const Color(0xFF003064)
-                    : Colors.white),
-          ],
-          color: const Color(0xFF414754).withOpacity(0.6),
-          buttonBackgroundColor: const Color(0xFFAAC7FF),
-          backgroundColor: Colors.transparent,
+        bottomNavigationBar: Builder(
+          builder: (context) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final inactiveColor = isDark ? Colors.white : Colors.black87;
+            final barColor = isDark
+                ? Theme.of(context).dividerColor.withOpacity(0.6)
+                : const Color(0xFFF3F4F6); // Light gray for light mode to contrast with white scaffold
+
+            return CurvedNavigationBar(
+              index: _selectedIndex,
+              height: 60.0,
+              items: <Widget>[
+                Icon(Icons.home_outlined,
+                    size: 30,
+                    color: _selectedIndex == 0
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : inactiveColor),
+                Icon(Icons.directions_boat_outlined,
+                    size: 30,
+                    color: _selectedIndex == 1
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : inactiveColor),
+                Icon(Icons.qr_code_scanner,
+                    size: 30,
+                    color: _selectedIndex == 2
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : inactiveColor),
+                Icon(Icons.person_outline,
+                    size: 30,
+                    color: _selectedIndex == 3
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : inactiveColor),
+              ],
+              color: barColor,
+              buttonBackgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: Colors.transparent,
           animationCurve: Curves.easeInOut,
           animationDuration: const Duration(milliseconds: 300),
           onTap: (index) {
@@ -335,6 +356,8 @@ class _DashboardPageState extends State<DashboardPage> {
             });
           },
           letIndexChange: (index) => true,
+            );
+          },
         ),
       ),
     );

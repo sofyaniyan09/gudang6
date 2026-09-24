@@ -4,6 +4,7 @@ import '../main.dart';
 import 'items_page.dart';
 import '../widgets/obsidian_scaffold.dart';
 import '../widgets/glass_card.dart';
+import '../utils/app_locale.dart';
 
 class ScannedContainersPage extends StatefulWidget {
   final String scannedItemName;
@@ -19,7 +20,7 @@ class ScannedContainersPage extends StatefulWidget {
 
 class _ScannedContainersPageState extends State<ScannedContainersPage> with RouteAware, TitleUpdater<ScannedContainersPage> {
   @override
-  String get pageTitle => 'Hasil Scan';
+  String get pageTitle => AppLocale.t('scan_result');
   @override
   String? get pageSubtitle => widget.scannedItemName;
   
@@ -121,7 +122,7 @@ class _ScannedContainersPageState extends State<ScannedContainersPage> with Rout
       if (mounted) {
         if (_containers.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Koneksi tidak stabil. Gagal memuat data kontainer.')),
+            SnackBar(content: Text(AppLocale.t('scanned_containers_error'))),
           );
         }
       }
@@ -138,12 +139,12 @@ class _ScannedContainersPageState extends State<ScannedContainersPage> with Rout
   Widget build(BuildContext context) {
     return ObsidianScaffold(
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0057C2)))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
           : _containers.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'Tidak ditemukan kontainer untuk barang ini',
-                    style: TextStyle(color: Color(0xFFC0C6D6)),
+                    AppLocale.t('no_container_for_item'),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                 )
               : ListView.builder(
@@ -158,7 +159,7 @@ class _ScannedContainersPageState extends State<ScannedContainersPage> with Rout
                     final namaFile = container['nama_file'];
                     
                     final latestDate = container['latest_date'] as DateTime;
-                    String latestDateStr = 'Belum diupdate';
+                    String latestDateStr = AppLocale.t('not_updated');
                     if (latestDate.millisecondsSinceEpoch > 0) {
                       latestDateStr = '${latestDate.day.toString().padLeft(2, '0')}/${latestDate.month.toString().padLeft(2, '0')}/${latestDate.year} ${latestDate.hour.toString().padLeft(2, '0')}:${latestDate.minute.toString().padLeft(2, '0')}';
                     }
@@ -180,26 +181,26 @@ class _ScannedContainersPageState extends State<ScannedContainersPage> with Rout
                         },
                         title: Text(
                           containerNo,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(
                               namaFile,
-                              style: const TextStyle(color: Color(0xFFAAC7FF), fontSize: 12),
+                              style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(4),
                               child: LinearProgressIndicator(
                                 value: progress,
                                 backgroundColor: const Color(0xFF2A2F3D),
-                                color: progress == 1.0 ? Colors.green : const Color(0xFF3E90FF),
+                                color: progress == 1.0 ? Colors.green : Theme.of(context).colorScheme.primary,
                                 minHeight: 6,
                               ),
                             ),
@@ -207,19 +208,19 @@ class _ScannedContainersPageState extends State<ScannedContainersPage> with Rout
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '$completed/$total Diinspeksi',
-                                  style: const TextStyle(
-                                    color: Color(0xFFC0C6D6),
+                                  AppLocale.t('inspected_progress').replaceAll('{completed}', completed.toString()).replaceAll('{total}', total.toString()),
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     fontSize: 12,
                                   ),
                                 ),
                                 Row(
                                   children: [
-                                    const Icon(Icons.access_time, size: 12, color: Color(0xFF8B91A0)),
-                                    const SizedBox(width: 4),
+                                    Icon(Icons.access_time, size: 12, color: Color(0xFF8B91A0)),
+                                    SizedBox(width: 4),
                                     Text(
                                       latestDateStr,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Color(0xFF8B91A0),
                                         fontSize: 11,
                                       ),
@@ -230,9 +231,9 @@ class _ScannedContainersPageState extends State<ScannedContainersPage> with Rout
                             ),
                           ],
                         ),
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.chevron_right,
-                          color: Color(0xFFC0C6D6),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     );

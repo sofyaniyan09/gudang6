@@ -1,9 +1,13 @@
-<!DOCTYPE html><html lang="en" class="dark" style="background-color: #10131b;"><head>
+<!DOCTYPE html><html lang="en" class="dark"><head>
   <!-- Sidebar State Initialization -->
 <script>
   (function() {
     if (localStorage.getItem('sidebar_collapsed') === 'true') {
       document.documentElement.classList.add('sidebar-collapsed');
+    }
+    // Theme: apply saved preference instantly to prevent flash
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.classList.remove('dark');
     }
   })();
 </script>
@@ -15,11 +19,11 @@
 
 <script type="module">
   import { requireAuth } from './src/auth.js';
-  requireAuth();
+  requireAuth('admin');
 </script>
     <link rel="stylesheet" href="/assets/tailwind.css"/>
 </head>
-<body class="bg-background text-on-background flex flex-col md:flex-row min-h-screen" style="background-color: #10131b; color: #e0e2ed;">
+<body class="bg-background text-on-background flex flex-col md:flex-row min-h-screen">
 
 <!-- SideNavBar (Desktop) -->
 
@@ -92,7 +96,7 @@
 </div>
 </div>
 <!-- Progress/Chart Card: Container Update Progress -->
-<div class="glass-card rounded-3xl p-5 flex flex-col relative overflow-hidden border border-white/5 bg-surface-container-lowest/10 responsive-card desktop-col-6 w-full">
+<div class="glass-card rounded-3xl p-5 flex flex-col relative overflow-hidden border border-white/5 bg-surface-container-lowest/10 responsive-card desktop-col-6 w-full touch-pan-y">
   <div>
     <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-6">Grafik Update</p>
   </div>

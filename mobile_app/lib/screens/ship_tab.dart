@@ -4,6 +4,7 @@ import '../main.dart';
 import '../widgets/glass_card.dart';
 import 'containers_page.dart';
 import '../utils/route_observer.dart';
+import '../utils/app_locale.dart';
 
 class ShipTab extends StatefulWidget {
   const ShipTab({super.key});
@@ -15,7 +16,7 @@ class ShipTab extends StatefulWidget {
 class _ShipTabState extends State<ShipTab> with RouteAware, TitleUpdater<ShipTab> {
   RealtimeChannel? _realtimeChannel;
   @override
-  String get pageTitle => 'Daftar Armada';
+  String get pageTitle => AppLocale.t('fleet_list');
 
   bool _isLoading = true;
   List<Map<String, dynamic>> _ships = [];
@@ -116,8 +117,8 @@ class _ShipTabState extends State<ShipTab> with RouteAware, TitleUpdater<ShipTab
     } catch (e) {
       if (mounted && _ships.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Koneksi tidak stabil. Gagal memuat data kapal.'),
+          SnackBar(
+            content: Text(AppLocale.t('connection_unstable')),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -144,15 +145,15 @@ class _ShipTabState extends State<ShipTab> with RouteAware, TitleUpdater<ShipTab
         children: [
           Expanded(
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFAAC7FF)))
+                ? Center(
+                    child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
                 : _ships.isEmpty
-                    ? const Center(
-                        child: Text('Belum ada data armada kapal.',
+                    ? Center(
+                        child: Text(AppLocale.t('no_fleet_data'),
                             style: TextStyle(color: Colors.grey)))
                     : RefreshIndicator(
                         onRefresh: _fetchShips,
-                        color: const Color(0xFF0057C2),
+                        color: Theme.of(context).colorScheme.primary,
                         child: ListView.builder(
                           padding: const EdgeInsets.all(24),
                           itemCount: _ships.length,
@@ -181,17 +182,17 @@ class _ShipTabState extends State<ShipTab> with RouteAware, TitleUpdater<ShipTab
                                         width: 56,
                                         height: 56,
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF3E90FF)
+                                          color: Theme.of(context).colorScheme.primary
                                               .withOpacity(0.2),
                                           borderRadius:
                                               BorderRadius.circular(16),
                                         ),
-                                        child: const Icon(
+                                        child: Icon(
                                             Icons.directions_boat_filled_rounded,
-                                            color: Color(0xFFAAC7FF),
+                                            color: Theme.of(context).colorScheme.primary,
                                             size: 28),
                                       ),
-                                      const SizedBox(width: 16),
+                                      SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -199,42 +200,42 @@ class _ShipTabState extends State<ShipTab> with RouteAware, TitleUpdater<ShipTab
                                           children: [
                                             Text(
                                               ship['clean_name'],
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w800,
-                                                color: Color(0xFFE0E2ED),
+                                                color: Theme.of(context).colorScheme.onSurface,
                                               ),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                            const SizedBox(height: 6),
+                                            SizedBox(height: 6),
                                             Text(
-                                              '${(ship['containers'] as Set<String>).length} Kontainer',
+                                              '${(ship['containers'] as Set<String>).length} ${AppLocale.t('container')}',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: const Color(0xFFE0E2ED)
+                                                color: Theme.of(context).colorScheme.onSurface
                                                     .withOpacity(0.6),
                                               ),
                                             ),
-                                            const SizedBox(height: 12),
+                                            SizedBox(height: 12),
                                             Row(
                                               children: [
                                                 Expanded(
                                                   child: LinearProgressIndicator(
                                                     value: (ship['total_items'] as int) > 0 ? ((ship['inspected_items'] as int) / (ship['total_items'] as int)) : 0.0,
-                                                    backgroundColor: Colors.white.withOpacity(0.1),
-                                                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3E90FF)),
+                                                    backgroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                                                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                                                     minHeight: 4,
                                                     borderRadius: BorderRadius.circular(2),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 8),
+                                                SizedBox(width: 8),
                                                 Text(
                                                   '${(ship['total_items'] as int) > 0 ? (((ship['inspected_items'] as int) / (ship['total_items'] as int)) * 100).round() : 0}%',
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.bold,
-                                                    color: Color(0xFFE0E2ED),
+                                                    color: Theme.of(context).colorScheme.onSurface,
                                                   ),
                                                 ),
                                               ],
@@ -242,8 +243,8 @@ class _ShipTabState extends State<ShipTab> with RouteAware, TitleUpdater<ShipTab
                                           ],
                                         ),
                                       ),
-                                      const Icon(Icons.chevron_right,
-                                          color: Color(0xFFAAC7FF)),
+                                      Icon(Icons.chevron_right,
+                                          color: Theme.of(context).colorScheme.primary),
                                     ],
                                   ),
                                 ),

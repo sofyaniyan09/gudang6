@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+    <title>Gudang 6 Mobile Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/src/index.css"/>
+    <style>
+        /* ── Outer canvas for desktop ── */
+        html {
+            background: #07090f;
+            height: 100%;
+        }
+        body {
+            background-color: #10131b !important;
+            color: #e0e2ed !important;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05) !important;
+            backdrop-filter: blur(40px) !important;
+            -webkit-backdrop-filter: blur(40px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+            color: white !important;
+        }
+
+        .bottom-nav {
+            background: rgba(16, 19, 27, 0.92) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        .nav-item.active { color: #aac7ff; }
+        .nav-item.active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+        /* Tab visibility */
+        .tab-content { display: none; height: 100%; }
+        .tab-content.active { display: flex; flex-direction: column; }
+
+        /* Slide panels — absolute inside body (max-w-md container) */
+        .slide-panel {
+            position: absolute;
+            inset: 0;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            background: #10131B;
+        }
+        .slide-panel.hidden { display: none; }
+
+        :root { --donut-inner: #12151D; }
+        html.light-theme { --donut-inner: #FFFFFF; }
+
+        /* Light Theme Overrides */
+        html.light-theme body, 
+        html.light-theme .slide-panel {
+            background-color: #F8FAFC !important;
+            color: #0F172A !important;
+        }
+        html.light-theme .text-white { color: #0F172A !important; }
+        html.light-theme .text-white\/90 { color: #1E293B !important; }
+        html.light-theme .text-white\/80 { color: #334155 !important; }
+        html.light-theme .text-white\/70 { color: #475569 !important; }
+        html.light-theme .text-white\/60 { color: #475569 !important; }
+        html.light-theme .text-white\/50 { color: #64748B !important; }
+        html.light-theme .text-white\/40 { color: #94A3B8 !important; }
+        html.light-theme .text-white\/30 { color: #94A3B8 !important; }
+        html.light-theme .text-white\/20 { color: #CBD5E1 !important; }
+        
+        html.light-theme .bg-\[\#10131B\] { background-color: #F8FAFC !important; }
+        html.light-theme .bg-\[\#10131B\]\/80 { background-color: rgba(248, 250, 252, 0.8) !important; }
+        html.light-theme .bg-\[\#10131B\]\/95 { background-color: rgba(248, 250, 252, 0.95) !important; }
+        html.light-theme .bg-\[\#1C212D\] { background-color: #FFFFFF !important; }
+        html.light-theme .bg-\[\#2A2D36\] { background-color: #FFFFFF !important; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        html.light-theme .bg-white\/10 { background-color: rgba(0,0,0,0.05) !important; }
+        html.light-theme .bg-white\/5 { background-color: rgba(0,0,0,0.02) !important; }
+        html.light-theme .bg-\[\#3B4966\] { background-color: #E2E8F0 !important; color: #1D4ED8 !important; }
+        
+        html.light-theme .border-white\/5, 
+        html.light-theme .border-white\/10, 
+        html.light-theme .border-white\/20 { border-color: rgba(0,0,0,0.1) !important; }
+        
+        html.light-theme .glass-card { 
+            background: #FFFFFF !important; 
+            border: 1px solid rgba(0,0,0,0.05) !important; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+            color: #0F172A !important;
+        }
+        html.light-theme .bottom-nav {
+            background: rgba(255, 255, 255, 0.92) !important;
+            border-top: 1px solid rgba(0,0,0,0.1) !important;
+        }
+        html.light-theme .bottom-nav::before {
+            background: #FFFFFF !important;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05) !important;
+        }
+        html.light-theme .nav-item.active { color: #1D4ED8 !important; }
+        
+        html.light-theme input, 
+        html.light-theme select, 
+        html.light-theme textarea { 
+            color: #0F172A !important; 
+            background-color: #F1F5F9 !important;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen w-full max-w-md mx-auto relative shadow-2xl overflow-hidden bg-[#10131B]" style="box-shadow:0 0 80px rgba(0,0,0,0.8);">
+    
+    <!-- Top App Bar -->
+    <header class="shrink-0 flex items-center justify-between px-4 py-3 bg-[#10131B]/80 backdrop-blur-md border-b border-white/5 z-20 w-full min-h-[60px]" style="padding-top: max(env(safe-area-inset-top), 0.75rem);">
+        <div class="flex items-center gap-3">
+            <img src="/assets/logo_transparent.png" alt="Logo" class="h-8 w-auto">
+            <div class="flex flex-col">
+                <h1 id="app-bar-title" class="text-[16px] font-bold text-white leading-tight">CC Penerimaan Material</h1>
+                <span id="app-bar-subtitle" class="text-[12px] text-[#aac7ff] hidden"></span>
+            </div>
+        </div>
+        <div class="flex items-center gap-1">
+            <!-- Upload Excel Button (Hidden by default, shown for admin on Armada tab) -->
+            <button id="btn-upload-excel" class="p-2 hidden">
+                <span class="material-symbols-outlined text-[#aac7ff]">upload_file</span>
+            </button>
+            <button id="btn-search-main" class="p-2">
+                <span class="material-symbols-outlined text-[#aac7ff]">search</span>
+            </button>
+            <button class="p-2">
+                <span class="material-symbols-outlined text-[#aac7ff]">notifications</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Global Search Bar (for Main Tabs) -->
+    <div id="search-bar-main" class="shrink-0 w-full px-4 py-3 bg-[#10131B]/95 border-b border-white/5 z-20 hidden backdrop-blur-md">
+        <input type="text" id="input-search-main" placeholder="Cari armada..." class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-[13px] text-white outline-none focus:border-white/40">
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative w-full" id="main-container">
+        
+        <!-- Tab 1: Overview -->
+        <div id="tab-overview" class="tab-content active w-full p-4">
+            <div class="flex items-center justify-center h-full text-white/50">
+                <div class="text-center">
+                    <span class="material-symbols-outlined text-4xl mb-2 animate-spin">sync</span>
+                    <p>Memuat Ringkasan (Fase 3)...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Armada -->
+        <div id="tab-armada" class="tab-content w-full p-4">
+             <div class="flex items-center justify-center h-full text-white/50">
+                <div class="text-center">
+                    <span class="material-symbols-outlined text-4xl mb-2 animate-spin">sync</span>
+                    <p>Memuat Daftar Armada (Fase 2)...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Scanner -->
+        <div id="tab-scanner" class="tab-content w-full p-4">
+            <div class="flex flex-col items-center justify-center h-full text-center">
+                <span class="material-symbols-outlined text-7xl text-white/20 mb-6">document_scanner</span>
+                <p class="text-white/60 mb-8 max-w-[250px]">Pindai Shipping Mark untuk mencari data material/kontainer secara otomatis.</p>
+                
+                <label for="camera-upload" class="bg-[#aac7ff] text-[#003064] px-6 py-4 rounded-full font-bold flex items-center gap-2 cursor-pointer shadow-lg active:scale-95 transition-transform">
+                    <span class="material-symbols-outlined">camera_alt</span>
+                    Buka Kamera / Galeri
+                </label>
+                <input type="file" id="camera-upload" accept="image/*" capture="environment" class="hidden">
+            </div>
+        </div>
+
+        
+        <!-- Tab Users: Manajemen Akun (Admin Only) -->
+        <div id="tab-users" class="tab-content w-full p-4">
+            <button id="btn-add-user-mobile" class="w-full bg-[#aac7ff] text-[#003064] font-bold py-3.5 rounded-2xl mb-4 shadow-lg active:scale-95 transition-transform flex justify-center items-center gap-2">
+                <span class="material-symbols-outlined">person_add</span> Tambah Pengguna
+            </button>
+            <div id="user-list-mobile" class="flex flex-col gap-3 pb-6">
+                <!-- User items will be injected here -->
+                <div class="text-center text-white/50 py-10"><span class="material-symbols-outlined animate-spin text-3xl">sync</span><p>Memuat Pengguna...</p></div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Profil -->
+        <div id="tab-profil" class="tab-content w-full p-4">
+             <div class="flex items-center justify-center h-full text-white/50">
+                <div class="text-center">
+                    <span class="material-symbols-outlined text-4xl mb-2 animate-spin">sync</span>
+                    <p>Memuat Profil (Fase 4)...</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Slide-in Panel: Daftar Kontainer (Layer 1) -->
+    <div id="panel-containers" class="slide-panel hidden" style="z-index:30">
+        <header class="flex items-center justify-between px-4 py-3 border-b border-white/5 min-h-[60px] shrink-0 bg-[#10131B]/95 backdrop-blur-md" style="padding-top: max(env(safe-area-inset-top), 0.75rem);">
+            <div class="flex items-center gap-3 min-w-0">
+                <button id="btn-back-containers" class="p-2 -ml-2 text-white/70 rounded-full active:bg-white/10 transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <div class="flex flex-col flex-1 min-w-0">
+                    <h2 id="panel-ship-title" class="text-[16px] font-bold text-white truncate">Nama Kapal</h2>
+                    <span class="text-[12px] text-[#aac7ff]">Daftar Kontainer</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+                <button id="btn-delete-ship" class="p-2 hidden">
+                    <span class="material-symbols-outlined text-red-500">delete</span>
+                </button>
+                <button id="btn-search-containers" class="p-2">
+                    <span class="material-symbols-outlined text-[#aac7ff]">search</span>
+                </button>
+            </div>
+        </header>
+        <div id="search-bar-containers" class="px-4 py-3 bg-[#10131B]/95 border-b border-white/5 shrink-0 hidden">
+            <input type="text" id="input-search-containers" placeholder="Cari kontainer..." class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-[13px] text-white outline-none focus:border-white/40">
+        </div>
+        <div id="container-list-content" class="flex-1 overflow-y-auto p-4 pb-6"></div>
+    </div>
+
+    <!-- Slide-in Panel: Daftar Barang per Kontainer (Layer 2) -->
+    <div id="panel-items" class="slide-panel hidden" style="z-index:40">
+        <header class="flex items-center justify-between px-4 py-3 border-b border-white/5 min-h-[60px] shrink-0 bg-[#10131B]/95 backdrop-blur-md" style="padding-top: max(env(safe-area-inset-top), 0.75rem);">
+            <div class="flex items-center gap-3 min-w-0">
+                <button id="btn-back-items" class="p-2 -ml-2 text-white/70 rounded-full active:bg-white/10 transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <div class="flex flex-col flex-1 min-w-0">
+                    <h2 id="panel-items-title" class="text-[16px] font-bold text-white truncate">Kontainer</h2>
+                    <span id="panel-items-subtitle" class="text-[12px] text-[#aac7ff] truncate"></span>
+                </div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+                <button id="btn-search-items" class="p-2">
+                    <span class="material-symbols-outlined text-[#aac7ff]">search</span>
+                </button>
+                <button id="btn-bulk-select" class="p-2">
+                    <span class="material-symbols-outlined text-[#aac7ff]" id="icon-bulk-select">check_box_outline_blank</span>
+                </button>
+            </div>
+        </header>
+        <div id="search-bar-items" class="px-4 py-3 bg-[#10131B]/95 border-b border-white/5 shrink-0 hidden">
+            <input type="text" id="input-search-items" placeholder="Cari barang..." class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-[13px] text-white outline-none focus:border-white/40">
+        </div>
+        <div id="items-list-content" class="flex-1 overflow-y-auto p-4 pb-20"></div>
+        
+        <!-- Bulk Action Bar -->
+        <div id="bulk-action-bar" class="absolute bottom-0 w-full p-4 bg-[#10131B]/95 border-t border-white/5 backdrop-blur-md hidden" style="z-index: 45; padding-bottom: max(env(safe-area-inset-bottom), 1rem);">
+            <div class="flex items-center justify-between">
+                <span id="bulk-selected-count" class="text-white font-bold text-[14px]">0 Terpilih</span>
+                <button id="btn-bulk-update" onclick="window.openBulkInspection()" class="bg-[#aac7ff] text-[#003064] font-bold py-2 px-4 rounded-xl active:scale-95 transition-transform text-[13px]">
+                    Update Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide-in Panel: Detail Inspeksi Barang (Layer 3) -->
+    <div id="panel-inspection" class="slide-panel hidden" style="z-index:50">
+        <header class="flex items-center gap-3 px-4 py-3 border-b border-white/5 min-h-[60px] shrink-0 bg-[#10131B]/95 backdrop-blur-md" style="padding-top: max(env(safe-area-inset-top), 0.75rem);">
+            <button id="btn-back-inspection" class="p-2 -ml-2 text-white/70 rounded-full active:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <div class="flex flex-col flex-1 min-w-0">
+                <h2 id="panel-inspection-title" class="text-[16px] font-bold text-white truncate">Detail Barang</h2>
+                <span id="panel-inspection-subtitle" class="text-[12px] text-[#aac7ff] truncate"></span>
+            </div>
+        </header>
+        <div id="inspection-content" class="flex-1 overflow-y-auto p-4 pb-6"></div>
+    </div>
+
+    <!-- Bottom Navigation Bar (Mimic Flutter Curved Nav) -->
+    <nav class="bottom-nav shrink-0 w-full min-h-[65px] flex items-center justify-around z-20 bg-[#1C212D] rounded-t-[20px]" style="padding-bottom: env(safe-area-inset-bottom);">
+        <button class="nav-item active flex items-center justify-center w-14 h-14 rounded-full text-white/50 transition-all duration-300 relative -top-3 bg-transparent" data-tab="tab-overview" data-title="CC Penerimaan Material">
+            <span class="material-symbols-outlined text-[28px]">home</span>
+        </button>
+        <button class="nav-item flex items-center justify-center w-14 h-14 rounded-full text-white/50 transition-all duration-300 relative -top-3 bg-transparent" data-tab="tab-armada" data-title="Daftar Armada">
+            <span class="material-symbols-outlined text-[28px]">directions_boat</span>
+        </button>
+        <button class="nav-item flex items-center justify-center w-14 h-14 rounded-full text-white/50 transition-all duration-300 relative -top-3 bg-transparent" data-tab="tab-scanner" data-title="Scanner OCR" id="nav-btn-scanner">
+            <span class="material-symbols-outlined text-[28px]">qr_code_scanner</span>
+        </button>
+        <button class="nav-item flex items-center justify-center w-14 h-14 rounded-full text-white/50 transition-all duration-300 relative -top-3 bg-transparent hidden" data-tab="tab-users" data-title="Manajemen Akun" id="nav-btn-users">
+            <span class="material-symbols-outlined text-[28px]">group</span>
+        </button>
+        <button class="nav-item flex items-center justify-center w-14 h-14 rounded-full text-white/50 transition-all duration-300 relative -top-3 bg-transparent" data-tab="tab-profil" data-title="Profil">
+            <span class="material-symbols-outlined text-[28px]">person</span>
+        </button>
+    </nav>
+
+    <style>
+        /* Mobile App Nav Style */
+        .bottom-nav::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0; top: 0;
+            background: #1C212D;
+            border-radius: 20px 20px 0 0;
+            z-index: -1;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+        }
+        .nav-item.active {
+            background-color: #BACDFF !important;
+            color: #003064 !important;
+            transform: translateY(-8px);
+            box-shadow: 0 4px 15px rgba(186,205,255,0.2);
+        }
+        .nav-item.active .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+        .nav-item:not(.active) {
+            transform: translateY(10px);
+        }
+        
+        /* Dark Theme overrides for the body */
+        body { background-color: #11141C; }
+        .slide-panel { 
+            background-color: #11141C; 
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+
+    <!-- Global Modal Overlay -->
+    <div id="mobile-modal-overlay" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0">
+        <div id="mobile-modal-content" class="bg-[#1C212D] border border-white/10 w-full max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 transition-transform">
+            <!-- Dynamic Content Injected via JS -->
+        </div>
+    </div>
+
+    <script type="module" src="/src/staffPortal.js"></script>
+    <script type="module" src="/src/upload.js"></script>
+    <!-- Hidden File Input for Excel Upload -->
+    <input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden">
+</body>
+</html>
