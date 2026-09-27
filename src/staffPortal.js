@@ -5,6 +5,7 @@
 
 import { requireStaffAuth, logout } from './auth.js';
 import { supabase } from './supabaseClient.js';
+import { initAIAssistant } from './aiAssistant.js';
 
 let currentUser = null;
 let currentProfile = null;
@@ -24,6 +25,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('nav-btn-users')?.classList.remove('hidden');
         initUserManagementMobile();
     }
+    
+    initAIAssistant();
     
     setupNavigation();
     setupSearchBars();

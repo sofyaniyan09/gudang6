@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { requireAuth } from './auth.js';
+import { initAIAssistant } from './aiAssistant.js';
 
 let globalContainerMap = null;
 // Ensure a global fallback for accidental references from other scripts
@@ -7,6 +8,7 @@ window.allData = window.allData || [];
 
 async function initDashboard() {
     await requireAuth();
+    initAIAssistant();
     loadOngoingUpdates();
     setupRealtimeSubscription();
 }
