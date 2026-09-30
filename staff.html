@@ -188,6 +188,16 @@
             </div>
         </div>
 
+        <!-- Tab: Data Sampling -->
+        <div id="tab-sampling" class="tab-content w-full p-4">
+             <div class="flex items-center justify-center h-full text-white/50">
+                <div class="text-center">
+                    <span class="material-symbols-outlined text-4xl mb-2 animate-spin">sync</span>
+                    <p>Memuat Data Sampling...</p>
+                </div>
+            </div>
+        </div>
+
         
         <!-- Tab Users: Manajemen Akun (Admin Only) -->
         <div id="tab-users" class="tab-content w-full p-4">
@@ -269,9 +279,14 @@
         <div id="bulk-action-bar" class="absolute bottom-0 w-full p-4 bg-[#10131B]/95 border-t border-white/5 backdrop-blur-md hidden" style="z-index: 45; padding-bottom: max(env(safe-area-inset-bottom), 1rem);">
             <div class="flex items-center justify-between">
                 <span id="bulk-selected-count" class="text-white font-bold text-[14px]">0 Terpilih</span>
-                <button id="btn-bulk-update" onclick="window.openBulkInspection()" class="bg-[#aac7ff] text-[#003064] font-bold py-2 px-4 rounded-xl active:scale-95 transition-transform text-[13px]">
-                    Update Status
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="btn-bulk-sampling" onclick="window.bulkSetPerluSampling()" class="bg-[#A855F7] text-white w-9 h-9 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[20px]">science</span>
+                    </button>
+                    <button id="btn-bulk-update" onclick="window.openBulkInspection()" class="bg-[#aac7ff] text-[#003064] font-bold py-2 px-4 rounded-xl active:scale-95 transition-transform text-[13px]">
+                        Update Status
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -300,6 +315,9 @@
         </button>
         <button class="nav-item flex items-center justify-center w-14 h-14 rounded-full text-white/50 transition-all duration-300 relative -top-3 bg-transparent" data-tab="tab-scanner" data-title="Scanner OCR" id="nav-btn-scanner">
             <span class="material-symbols-outlined text-[28px]">qr_code_scanner</span>
+        </button>
+        <button class="nav-item flex items-center justify-center w-14 h-14 rounded-full text-white/50 transition-all duration-300 relative -top-3 bg-transparent" data-tab="tab-sampling" data-title="Data Sampling" id="nav-btn-sampling">
+            <span class="material-symbols-outlined text-[28px]">science</span>
         </button>
         <button class="nav-item flex items-center justify-center w-14 h-14 rounded-full text-white/50 transition-all duration-300 relative -top-3 bg-transparent hidden" data-tab="tab-users" data-title="Manajemen Akun" id="nav-btn-users">
             <span class="material-symbols-outlined text-[28px]">group</span>
