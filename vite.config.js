@@ -13,7 +13,8 @@ export default defineConfig({
         kelola_kapal: resolve(__dirname, 'kelola_kapal.html'),
         staff_dashboard: resolve(__dirname, 'staff_dashboard.html'),
         user_management: resolve(__dirname, 'user_management.html'),
-        staff: resolve(__dirname, 'staff.html')
+        staff: resolve(__dirname, 'staff.html'),
+        sampling: resolve(__dirname, 'sampling.html')
       }
     }
   }

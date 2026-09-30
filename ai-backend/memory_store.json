@@ -1,0 +1,77 @@
+{
+  "history": [
+    {
+      "user": "kamu siapa",
+      "assistant": "Terjadi kesalahan pada Agent: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/get-started).', 'status': 'NOT_FOUND'}}"
+    },
+    {
+      "user": "kamu siapa",
+      "assistant": "Halo! Perkenalkan, saya adalah **Gudang AI**, asisten virtual yang siap membantu operasional gudang Anda. \n\nSaya di sini untuk membantu Anda dalam:\n- 📦 **Menganalisis data inventaris** (stok barang, perputaran barang, dan laporan persediaan)\n- 🚢 **Mengelola data kapal dan pengiriman** (jadwal bongkar muat, manifes, dan logistik)\n- 🤝 **Informasi supplier** (data pemasok, riwayat pesanan, dan performa pengiriman)\n\nMohon maaf atas kendala teknis pada sistem sebelumnya. Ada yang bisa saya bantu terkait data inventaris, kapal, atau supplier hari ini?"
+    },
+    {
+      "user": "kapal berapa yang terakhir saya upload",
+      "assistant": "Terjadi kesalahan pada Agent: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "user": "kamu siapa",
+      "assistant": "Terjadi kesalahan pada Agent: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}"
+    },
+    {
+      "user": "kamu saiapa",
+      "assistant": "Terjadi kesalahan pada Agent: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 250000, model: gemini-3.8-flash\\nPlease retry in 27.855250511s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'model': 'gemini-3.8-flash', 'location': 'global'}, 'quotaValue': '250000'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '27s'}]}}"
+    },
+    {
+      "user": "Kamu siapa",
+      "assistant": "Terjadi kesalahan pada Agent: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 250000, model: gemini-3.8-flash\\nPlease retry in 35.627555156s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '250000'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '35s'}]}}"
+    },
+    {
+      "user": "kamu siapa",
+      "assistant": "Terjadi kesalahan pada Agent: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 250000, model: gemini-3.8-flash\\nPlease retry in 10.007559956s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '250000'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '10s'}]}}"
+    },
+    {
+      "user": "kamu siapa",
+      "assistant": "Terjadi kesalahan pada Agent: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 250000, model: gemini-3.8-flash\\nPlease retry in 47.154383165s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'model': 'gemini-3.8-flash', 'location': 'global'}, 'quotaValue': '250000'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}"
+    },
+    {
+      "user": "Kontainer mana di kapal 207 yang memiliki sarung tangan",
+      "assistant": "Terjadi kesalahan pada Agent: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "user": "untuk kapal 207 kontainer mana yang memuat sarung tangan dengan suplayer1025",
+      "assistant": "Terjadi kesalahan pada Agent: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "user": "untuk kapal 207 kontainer mana yang memuat sarung tangan dengan suplayer1025",
+      "assistant": "Terjadi kesalahan pada Agent: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/get-started).', 'status': 'NOT_FOUND'}}"
+    },
+    {
+      "user": "tes",
+      "assistant": "Terjadi kesalahan pada Agent: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/get-started).', 'status': 'NOT_FOUND'}}"
+    },
+    {
+      "user": "tes",
+      "assistant": "Terjadi kesalahan pada Agent: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "user": "Untuk kapal 207 kontainer mana yang memuat sarung tangan dengan suplayer1025",
+      "assistant": "Sistem online dan siap menganalisis manifest. \n\nBerdasarkan data logistik untuk kapal `207船编辑清单.xlsx`, sarung tangan yang terkait dengan kode/supplier **`IMIPBVPA1025`** dimuat di dalam kontainer berikut:\n\n- **Nomor Kontainer:** `TTNU 4489942`\n- **Material:** Sarung tangan las (电焊手套) dan Sarung Tangan Tahan Panas (隔热手套)\n\nApakah Anda ingin saya menampilkan detail muatan kontainer tersebut atau memfilter tampilan layar Anda ke kontainer `TTNU 4489942`? \n\n[ACTION: TAB_INVENTORY]"
+    },
+    {
+      "user": "kamu siapa",
+      "assistant": "Saya adalah **Gudang AI**, asisten digital tingkat lanjut (Agentic AI) yang dirancang khusus untuk mengelola operasional logistik pelabuhan, manifest kargo, dan inventaris pergudangan Anda. \n\nSaya bertindak sebagai komandan sistem digital untuk membantu Anda menganalisis data logistik secara real-time, memeriksa muatan kontainer, melacak *supply chain*, hingga mengeksekusi perintah langsung pada antarmuka aplikasi Anda secara efisien.\n\nAda operasi logistik, pemindaian kontainer, atau data manifest yang perlu saya bantu analisis hari ini?"
+    },
+    {
+      "user": "Apakah kamu bisa membuat atau menambahkan daftar antrean sampling barang",
+      "assistant": "Tentu saja. Sebagai Gudang AI, saya memiliki kendali penuh untuk mengelola daftar antrean *quality control* dan *sampling* barang guna memastikan standar *supply chain* tetap terjaga sebelum muatan didistribusikan ke area operasional.\n\nMeskipun saya tidak dapat menulis data baru secara permanen ke file sumber eksternal tanpa modul input tambahan, **saya dapat langsung mendeteksi, memfilter, dan menandai (mencentang) barang-barang di layar antarmuka Anda** yang wajib masuk ke dalam kriteria *sampling* berdasarkan manifest atau parameter yang Anda tentukan (seperti peralatan keselamatan, instrumen ukur, atau barang bergaransi khusus).\n\nApakah Anda ingin saya langsung mengeksekusi sistem untuk menandai atau mencentang barang-barang yang memerlukan *sampling* di layar Anda sekarang? \n\nJika ya, saya dapat langsung memicu sistem *auto-check* pada antarmuka. \n[ACTION: CHECK_SAMPLING]"
+    },
+    {
+      "user": "Kenapa harus membuka daftar kontainer terlebih dahulu",
+      "assistant": "Pertanyaan yang sangat tajam, Komandan. Izinkan saya menjelaskan logika operasional di balik sistem kita.\n\nMembuka atau memilih daftar kontainer (*containerization*) terlebih dahulu adalah fondasi dari manajemen logistik yang akurat karena beberapa alasan krusial:\n\n1. **Integritas *Supply Chain* & Manifest:** Ratusan hingga ribuan baris data kargo dari berbagai kapal (`198船`, `196船`, `205船`, `207船`, dll.) tersimpan dalam *live database* kita. Tanpa menentukan kontainer spesifik, analisis material bisa salah alamat atau tumpang tindih.\n2. **Presisi Agentic UI:** Ketika Anda memilih kontainer tertentu, \"Tangan Digital\" saya dapat langsung memfilter tampilan layar Anda secara spesifik ke unit kontainer tersebut (misalnya melacak kontainer `WSCU 9819984` atau `OOLU 7538839`), sehingga staf gudang tidak perlu pusing mencari secara manual di tengah ribuan kargo.\n3. **Efisiensi Kontrol Kualitas (QC):** Proses *sampling* atau pemeriksaan fisik barang menjadi jauh lebih cepat dan terarah berdasarkan segel (*seal number*) dan nomor kontainer yang sedang dibongkar di dermaga.\n\nSingkatnya, ini demi memastikan presisi data, kecepatan eksekusi di lapangan, dan menghindari *human error* dalam bongkar muat. \n\nApakah Anda ingin saya bantu pindah ke halaman manajemen kontainer sekarang untuk melihat muatan aktif? [ACTION: TAB_INVENTORY]"
+    },
+    {
+      "user": "Saya mau data barang yang ada di kontainer 4489942 yang ada di kapal 207 yaitu sarung tangan las, sarung tangan tahan panas untuk di masukkan dalam daftar sampling",
+      "assistant": "Perintah diterima, Komandan. Berdasarkan data manifest untuk kapal `207` pada kontainer **`TTNU 4489942`**, berikut adalah rincian muatan sarung tangan las dan sarung tangan tahan panas yang akan dimasukkan ke dalam daftar *sampling* (*Quality Control*):\n\n1. **Sarung Tangan Las (电焊手套)** - *Supplier:* `IMIPBVPA1025`\n   - **Spesifikasi:** Bahan kulit sapi, panjang 38cm, tebal ≥1.2mm, jahitan benang semi nilon.\n   - **Jumlah:** 3.600 Pasang.\n\n2. **Sarung Tangan Tahan Panas (隔热手套)** - *Supplier:* `IMIPBVPA1025`\n   - **Spesifikasi:** Bahan kulit sapi, panjang 33±1.5cm, tebal ≥1.2mm, telapak dua lapis, jahitan benang semi nilon.\n   - **Jumlah:** 6.200 Pasang.\n\nSaya akan segera mengunci parameter ini dan mengeksekusi sistem untuk menandai item-item tersebut ke dalam antrean *sampling* di layar Anda sekarang. \n\n[ACTION: CHECK_SAMPLING]"
+    }
+  ],
+  "facts": []
+}

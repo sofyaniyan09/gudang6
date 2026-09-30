@@ -37,7 +37,26 @@ function initUpload() {
                 
                 for (const sheetName of workbook.SheetNames) {
                     const worksheet = workbook.Sheets[sheetName];
-                    const rawDataAOA = window.XLSX ? window.XLSX.utils.sheet_to_json(worksheet, { header: 1 }) : XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    const xlsx = window.XLSX || XLSX;
+                    // Fill merged cells with the value from the top-left cell
+                    if (worksheet['!merges']) {
+                        worksheet['!merges'].forEach(range => {
+                            const topCellRef = xlsx.utils.encode_cell({ r: range.s.r, c: range.s.c });
+                            const topCell = worksheet[topCellRef];
+                            if (topCell) {
+                                for (let r = range.s.r; r <= range.e.r; r++) {
+                                    for (let c = range.s.c; c <= range.e.c; c++) {
+                                        if (r === range.s.r && c === range.s.c) continue;
+                                        const cellRef = xlsx.utils.encode_cell({ r: r, c: c });
+                                        worksheet[cellRef] = topCell;
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    const rawDataAOA = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
 
                     // Cari baris header di sheet ini
                     for (let i = 0; i < rawDataAOA.length; i++) {
@@ -68,6 +87,9 @@ function initUpload() {
                     return;
                 }
 
+                // Tampilkan semua kolom yang terdeteksi di Excel (termasuk yang tersembunyi)
+                const allExcelColumns = Object.keys(rawJsonData[0] || {});
+
                 // Helper: Cari kolom berdasarkan kata kunci (fuzzy matching dengan scoring)
                 const getVal = (row, ...keywords) => {
                     let bestMatch = null;
@@ -96,11 +118,71 @@ function initUpload() {
                     return bestMatch ? row[bestMatch] : null;
                 };
 
+                // Helper: cari nama kolom Excel berdasarkan kata kunci (untuk preview saja)
+                const findColName = (keywords) => {
+                    const allKeys = Object.keys(rawJsonData[0] || {});
+                    for (const kw of keywords) {
+                        const found = allKeys.find(k => k.toLowerCase().includes(kw.toLowerCase()) || k.includes(kw));
+                        if (found) return found;
+                    }
+                    return null;
+                };
+
+                // Mapping kolom Excel → Database untuk preview
+                const columnPreview = [
+                    { db: 'nomor_kontainer', excelCol: findColName(['kontainer', '柜号']) || '❌ Tidak ditemukan' },
+                    { db: 'pt',              excelCol: findColName(['pt 公', ' pt', 'PT ']) || findColName(['公司']) || '❌ Tidak ditemukan' },
+                    { db: 'supplier',        excelCol: findColName(['supplier', 'suplayer', 'supplayer', 'vendor', '供应商']) || '❌ Tidak ditemukan' },
+                    { db: 'nama_material',   excelCol: findColName(['material', '物品名称']) || '❌ Tidak ditemukan' },
+                    { db: 'jumlah_data',     excelCol: findColName(['jumlah data', '清单数量']) || '❌ Tidak ditemukan' },
+                    { db: 'satuan',          excelCol: findColName(['satuan 单', ' satuan', 'satuan']) ? findColName(['satuan 单', ' satuan']) || findColName(['satuan']) : '❌ Tidak ditemukan' },
+                ];
+
+                const previewRows = columnPreview.map(c => `<tr><td style="padding:6px 12px;border:1px solid #444;color:#aaa">${c.db}</td><td style="padding:6px 12px;border:1px solid #444;color:${c.excelCol.includes('❌') ? '#ff8a80' : '#69f0ae'}">${c.excelCol}</td></tr>`).join('');
+                const allColsHtml = allExcelColumns.map(c => `<span style="background:#333;padding:2px 8px;border-radius:4px;margin:2px;display:inline-block;font-size:11px">${c}</span>`).join('');
+
+                const confirmed = await new Promise(resolve => {
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+                    overlay.innerHTML = `
+                        <div style="background:#1e1e2e;border:1px solid #444;border-radius:16px;padding:24px;max-width:600px;width:100%;color:white;max-height:90vh;overflow-y:auto">
+                            <h3 style="margin:0 0 8px;font-size:18px">🔍 Preview Kolom Terdeteksi</h3>
+                            <p style="color:#aaa;font-size:13px;margin:0 0 16px">File: <b>${file.name}</b> | ${rawJsonData.length} baris data</p>
+                            
+                            <p style="font-size:12px;color:#aaa;margin-bottom:6px">Semua kolom di Excel (termasuk tersembunyi):</p>
+                            <div style="margin-bottom:16px;line-height:1.8">${allColsHtml}</div>
+
+                            <p style="font-size:12px;color:#aaa;margin-bottom:6px">Pemetaan kolom ke database:</p>
+                            <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+                                <thead><tr>
+                                    <th style="padding:6px 12px;border:1px solid #444;text-align:left;color:#888">Kolom Database</th>
+                                    <th style="padding:6px 12px;border:1px solid #444;text-align:left;color:#888">Kolom Excel yang Ditemukan</th>
+                                </tr></thead>
+                                <tbody>${previewRows}</tbody>
+                            </table>
+
+                            <div style="display:flex;gap:10px">
+                                <button id="btn-cancel-upload" style="flex:1;padding:10px;border-radius:8px;border:1px solid #555;background:transparent;color:white;cursor:pointer">Batal</button>
+                                <button id="btn-confirm-upload" style="flex:1;padding:10px;border-radius:8px;border:none;background:#6c63ff;color:white;font-weight:bold;cursor:pointer">Upload Sekarang ✅</button>
+                            </div>
+                        </div>`;
+                    document.body.appendChild(overlay);
+                    document.getElementById('btn-confirm-upload').onclick = () => { overlay.remove(); resolve(true); };
+                    document.getElementById('btn-cancel-upload').onclick = () => { overlay.remove(); resolve(false); };
+                });
+
+                if (!confirmed) {
+                    uploadBtn.innerHTML = originalText;
+                    uploadBtn.disabled = false;
+                    return;
+                }
+
                 // Mapping data ke format database
                 const formattedData = rawJsonData.map(row => ({
                     nama_file: file.name,
                     nomor_kontainer: getVal(row, "kontainer", "柜号"),
                     pt: getVal(row, "pt", "公司"),
+                    supplier: getVal(row, "suplayer", "supplier", "supplayer", "vendor", "供应商"),
                     pelapor: getVal(row, "pelapor", "申报部门"),
                     nomor_kontrak: getVal(row, "kontrak", "合同"),
                     nomor_pembelian: getVal(row, "pembelian", "订单"),

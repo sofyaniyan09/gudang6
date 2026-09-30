@@ -9,6 +9,12 @@
     if (localStorage.getItem('theme') === 'light') {
       document.documentElement.classList.remove('dark');
     }
+    
+    // Redirect to mobile app instantly
+    if (window.innerWidth <= 768) {
+      document.documentElement.style.display = 'none';
+      window.location.replace('staff.html');
+    }
   })();
 </script>
 <meta charset="utf-8">

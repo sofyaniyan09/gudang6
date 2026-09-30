@@ -1,0 +1,191 @@
+<!DOCTYPE html><html lang="en" class="dark"><head>
+    <!-- Sidebar State Initialization -->
+<script>
+    (function() {
+        if (localStorage.getItem('sidebar_collapsed') === 'true') {
+            document.documentElement.classList.add('sidebar-collapsed');
+        }
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        }
+        
+        if (window.innerWidth <= 768) {
+            document.documentElement.style.display = 'none';
+            window.location.replace('staff.html');
+        }
+    })();
+</script>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Data Sampling</title>
+<link rel="manifest" href="/manifest.json?v=2" />
+<link rel="icon" type="image/png" href="/apple-touch-icon.png?v=2" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
+<meta name="theme-color" content="#10131b" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Gudang 6" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+  /* Safari/WebKit fix for sticky table headers with border-collapse */
+  .custom-scrollbar table thead th {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    box-shadow: inset 0 -1px 0 0 #414754; /* border-surface-variant */
+  }
+  #view-ships th { background-color: var(--color-surface-container); }
+  #view-containers th, #view-items th { background-color: var(--color-surface-container-lowest); }
+</style>
+
+
+
+    <link rel="stylesheet" href="/assets/tailwind.css"/>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar (Desktop) -->
+
+<!-- Main Content Wrapper -->
+<div id="main-content" class="flex-1 flex flex-col md:ml-64 relative min-w-0 content-wrapper h-screen">
+<!-- TopAppBar -->
+
+  <main class="flex-1 overflow-hidden flex flex-col pb-4 pt-6 lg:pt-8 w-full max-w-[1536px] px-2 md:px-6 mx-auto bg-background min-w-0">
+  <!-- Page Header Configuration for SPA -->
+  <div id="page-header-config" class="hidden">
+    <div class="page-title"><span id="main-title-text">Data Sampling</span>
+  <span id="breadcrumb-separator" class="hidden text-on-surface-variant text-[18px]">/</span>
+  <span id="container-title" class="hidden text-primary"></span></div>
+    <div class="left-actions"><button id="btn-back-to-files" class="hidden text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button></div>
+    <div class="right-actions"><!-- Search will be dynamically cloned --></div>
+  </div>
+  <!-- Original right side search will be handled by Navigation.js -->
+  <div id="original-search-placeholder" class="hidden"><div class="flex items-center gap-2 text-on-surface-variant">
+  <!-- Search Input (Collapsible) -->
+  <div class="relative flex items-center justify-end">
+    <div class="absolute left-1 w-9 h-9 flex items-center justify-center text-on-surface-variant pointer-events-none z-10">
+      <span class="material-symbols-outlined text-[20px]">search</span>
+    </div>
+    <input type="text" id="appbar-search-input" class="w-9 bg-transparent border-transparent hover:bg-surface-container-high/50 rounded-full border text-on-surface pl-10 pr-4 py-1.5 font-body-md text-body-md outline-none placeholder-transparent" placeholder="">
+  </div>
+  <button id="btn-upload-excel" class="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors font-label-md shadow-sm whitespace-nowrap" title="Upload Data Excel">
+    <span class="material-symbols-outlined text-[20px]">upload_file</span>
+    <span>Upload Excel</span>
+  </button>
+  <input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden">
+</div>
+</div>
+
+<!-- Mobile Header (Visible only on mobile) -->
+<div class="md:hidden mb-6">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4">Data Sampling</h1>
+</div>
+<!-- Data Table Card -->
+<div class="glass-panel rounded-2xl p-2 sm:p-4 lg:px-6 lg:py-4 border border-white/10 relative overflow-hidden flex flex-col flex-1 min-h-0" id="view-sampling-wrapper">
+    <!-- Card Toolbar -->
+    <div class="pb-4 mb-4 border-b border-surface-variant flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="flex items-center gap-4">
+            <h2 class="text-white/80 font-bold" id="sampling-count">Memuat data...</h2>
+            <button id="btn-bulk-delete" onclick="window.bulkDeleteSampling()" class="hidden bg-red-500/20 text-red-400 hover:bg-red-500/30 px-3 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">delete</span> Hapus Terpilih (<span id="bulk-delete-count">0</span>)
+            </button>
+        </div>
+    </div>
+    <!-- Responsive Table Wrapper -->
+    <div class="overflow-auto w-full flex-1 min-h-0 pb-4 custom-scrollbar">
+        <table class="w-full text-left border-collapse min-w-max">
+            <thead class="sticky top-0 z-20 bg-surface-container-lowest">
+                <tr class="border-b border-surface-variant text-on-surface-variant">
+                    <th class="py-3 px-4 w-10 text-center">
+                        <input type="checkbox" id="checkbox-all-sampling" onchange="window.toggleAllSampling(this)" class="w-4 h-4 rounded border-surface-variant bg-[#10131B] checked:bg-[#aac7ff] cursor-pointer">
+                    </th>
+                    <th class="py-3 px-4 font-label-sm uppercase tracking-wider font-semibold text-center whitespace-nowrap">No</th>
+                    <th class="py-3 px-4 font-label-sm uppercase tracking-wider font-semibold text-center whitespace-nowrap">Info Kapal & Supplier</th>
+                    <th class="py-3 px-4 font-label-sm uppercase tracking-wider font-semibold text-center whitespace-nowrap">Nama Barang & Spesifikasi</th>
+                    <th class="py-3 px-4 font-label-sm uppercase tracking-wider font-semibold text-center whitespace-nowrap">Qty & Proporsi</th>
+                    <th class="py-3 px-4 font-label-sm uppercase tracking-wider font-semibold text-center whitespace-nowrap">Kemasan</th>
+                    <th class="py-3 px-4 font-label-sm uppercase tracking-wider font-semibold text-center whitespace-nowrap">Hasil Sampling</th>
+                    <th class="py-3 px-4 font-label-sm uppercase tracking-wider font-semibold text-center whitespace-nowrap">Foto</th>
+                    <th class="py-3 px-4 font-label-sm uppercase tracking-wider font-semibold text-center whitespace-nowrap">Tanggal Sampling</th>
+                    <th class="py-3 px-4 font-label-sm uppercase tracking-wider font-semibold text-center whitespace-nowrap">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="sampling-table-body" class="font-body-md text-[13px] text-on-surface divide-y divide-surface-variant">
+                <tr>
+                    <td colspan="10" class="py-8 text-center text-on-surface-variant">
+                        <span class="material-symbols-outlined animate-spin text-[24px] mb-2">progress_activity</span>
+                        <p>Memuat data...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</main>
+</div>
+
+<!-- Modal Edit Sampling -->
+<div id="modal-edit-sampling" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-white/10 flex flex-col">
+        <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-surface-container-lowest">
+            <h3 class="text-[18px] font-bold text-white">Edit Hasil Sampling</h3>
+            <button onclick="closeEditSamplingModal()" class="text-white/50 hover:text-white transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="p-6">
+            <label class="block text-white/70 text-[13px] mb-2 font-medium">Jumlah Rusak</label>
+            <input type="number" id="edit-sampling-rusak" class="w-full bg-[#10131B] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#aac7ff] transition-colors" placeholder="Masukkan jumlah rusak (0 jika aman)">
+            <p class="text-white/50 text-[12px] mt-2">Ubah angka ini untuk memperbaiki hasil pencatatan sampling yang salah.</p>
+        </div>
+        <div class="p-4 border-t border-white/5 flex justify-end gap-3 bg-surface-container-lowest">
+            <button onclick="closeEditSamplingModal()" class="px-5 py-2 rounded-xl font-bold text-white/70 hover:bg-white/5 transition-colors">Batal</button>
+            <button id="btn-save-edit-sampling" class="px-5 py-2 rounded-xl font-bold bg-[#aac7ff] text-[#003064] hover:bg-[#84a9ff] transition-colors flex items-center gap-2">
+                Simpan
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<style>
+        /* iOS Safe Area padding for bottom nav */
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 8px);
+        }
+        
+        /* Custom springy transition for collapsible search */
+        #appbar-search-input {
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        /* Custom scrollbar for table to match airy aesthetic */
+        ::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #dad9df; /* surface-dim */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c1c6d7; /* outline-variant */
+        }
+    </style>
+
+
+
+<script type="module">
+  import { requireAuth } from './src/auth.js';
+  requireAuth('admin');
+</script>
+<script type="module" src="/src/sampling.js"></script>
+  <script type="module" src="/src/components/Navigation.js"></script>
+
+
+</body></html>

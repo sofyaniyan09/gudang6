@@ -34,6 +34,12 @@ export async function requireAuth(allowedRole = null) {
             return null;
         }
         
+        // Simpan profil ke localStorage agar fitur AI bisa cek peran
+        if (profile) {
+            localStorage.setItem('userProfile', JSON.stringify(profile));
+            window.dispatchEvent(new Event('app:profileLoaded'));
+        }
+        
         // Auto-redirect Admin to Staff Portal on Mobile
         if (profile?.role === 'admin' && window.innerWidth <= 768 && !window.location.pathname.includes('staff.html')) {
             window.location.replace('/staff.html');
@@ -76,6 +82,12 @@ export async function requireStaffAuth() {
         return null;
     }
 
+    // Simpan profil ke localStorage agar fitur AI bisa cek peran
+    if (profile) {
+        localStorage.setItem('userProfile', JSON.stringify(profile));
+        window.dispatchEvent(new Event('app:profileLoaded'));
+    }
+
     return { user: data.user, profile };
 }
 
@@ -112,20 +124,38 @@ export async function redirectIfAuthenticated() {
  * Menggunakan trik "Email Samaran" (NomorID@gudang6.com)
  */
 export async function login(idNumber, password) {
-    // Jika input mengandung '@', berarti Admin sedang menggunakan Email lama.
-    // Jika tidak ada '@', berarti user baru sedang menggunakan Nomor ID.
-    const loginEmail = idNumber.includes('@') ? idNumber : `${idNumber}@gudang6.com`;
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: password,
-    });
-
-    if (error) {
-        throw error;
+    // Jika input mengandung '@', berarti Admin sedang menggunakan Email spesifik.
+    if (idNumber.includes('@')) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: idNumber,
+            password: password,
+        });
+        if (error) throw error;
+        return data;
     }
 
-    return data;
+    // Jika tidak ada '@', coba berbagai variasi domain email samaran
+    // karena pembuatan akun di masa lalu mungkin menggunakan domain yang berbeda
+    const domainsToTry = ['@gudang.com', '@gudang6.com', '@gud.com'];
+    let lastError = null;
+
+    for (const domain of domainsToTry) {
+        const loginEmail = `${idNumber}${domain}`;
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: loginEmail,
+            password: password,
+        });
+
+        if (!error && data) {
+            return data; // Login berhasil
+        }
+        lastError = error;
+    }
+
+    // Jika semua domain gagal, lemparkan error terakhir
+    if (lastError) {
+        throw lastError;
+    }
 }
 
 /**

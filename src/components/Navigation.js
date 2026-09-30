@@ -1,3 +1,5 @@
+import { initAIAssistant } from '../aiAssistant.js';
+
 const TRANSLATIONS = {
     'id': {
         'nav_dashboard': 'Dasbor',
@@ -91,6 +93,10 @@ export function renderNavigation() {
         <a class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl whitespace-nowrap group transition-all duration-200 ease-in-out text-on-surface-variant hover:text-on-surface hover:bg-white/5 font-bold" href="user_management.html" data-path="/user_management.html" id="nav-user-management" style="display:none;">
             <span class="material-symbols-outlined flex-shrink-0 group-hover:scale-110 transition-transform duration-200 ease-in-out text-[26px]">group</span>
             <span class="sidebar-text text-[15px] transition-opacity duration-300 ease-in-out">${window.t('nav_user')}</span>
+        </a>
+        <a class="nav-link flex items-center gap-3 px-3 py-3 rounded-xl whitespace-nowrap group transition-all duration-200 ease-in-out text-on-surface-variant hover:text-on-surface hover:bg-white/5 font-bold" href="sampling.html" data-path="/sampling.html">
+            <span class="material-symbols-outlined flex-shrink-0 group-hover:scale-110 transition-transform duration-200 ease-in-out text-[26px]">science</span>
+            <span class="sidebar-text text-[15px] transition-opacity duration-300 ease-in-out">Data Sampling</span>
         </a>
     </nav>
     
@@ -856,9 +862,11 @@ if (document.readyState === 'loading') {
         initNavigation();
         renderNavigation();
         setupSPA();
+        initAIAssistant();
     });
 } else {
     initNavigation();
     renderNavigation();
     setupSPA();
+    initAIAssistant();
 }
