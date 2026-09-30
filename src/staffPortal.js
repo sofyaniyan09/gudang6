@@ -480,9 +480,9 @@ async function loadSampling() {
             return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        // ── PALET GROUPING: Group items that share the same pallet (kemasan) ──
-        // Key = ship + container + supplier + jumlah_kemasan + satuan_kemasan
-        const paletGroups = new Map();
+        // ── MATERIAL GROUPING: Group items that share the same material ──
+        // Key = ship + container + supplier + nama_material
+        const materialGroups = new Map();
         mergedSamplingItems.forEach((item, origIdx) => {
             let shipNum = '';
             if (item.nama_file) {
@@ -491,43 +491,53 @@ async function loadSampling() {
             }
             const cont = item.nomor_kontainer || 'Tanpa Kontainer';
             const supplier = item.supplier || 'Tanpa Supplier';
-            const kemasan = item.jumlah_kemasan || '';
-            const kemasanUnit = item.satuan_kemasan || '';
+            const materialName = (item.nama_material || '').trim().toLowerCase();
 
-            // Items with no kemasan info get their own individual card
-            const paletKey = (kemasan && kemasanUnit)
-                ? `${shipNum}::${cont}::${supplier}::${kemasan}::${kemasanUnit}`
-                : `SOLO::${origIdx}`;
+            const matKey = `${shipNum}::${cont}::${supplier}::${materialName}::${origIdx}`; // Wait, if I add origIdx they won't group!
+            // Correct key for grouping by material:
+            const groupKey = materialName ? `${shipNum}::${cont}::${supplier}::${materialName}` : `SOLO::${origIdx}`;
 
-            if (!paletGroups.has(paletKey)) {
-                paletGroups.set(paletKey, {
-                    shipNum, cont, supplier, kemasan, kemasanUnit,
+            if (!materialGroups.has(groupKey)) {
+                materialGroups.set(groupKey, {
+                    shipNum, cont, supplier,
+                    nama_material: item.nama_material,
                     items: [],
                     origIndices: [],
                     totalQty: 0,
+                    satuan: item.satuan || 'PCS',
                     ids: []
                 });
             }
-            const pg = paletGroups.get(paletKey);
-            pg.items.push(item);
-            pg.origIndices.push(origIdx);
-            pg.totalQty += (parseFloat(item.jumlah_data) || 0);
-            if (item.ids) pg.ids.push(...item.ids);
-            else if (item.id) pg.ids.push(item.id);
+            const mg = materialGroups.get(groupKey);
+            mg.items.push(item);
+            mg.origIndices.push(origIdx);
+            mg.totalQty += (parseFloat(item.jumlah_data) || 0);
+            if (item.ids) mg.ids.push(...item.ids);
+            else if (item.id) mg.ids.push(item.id);
         });
 
-        const paletArray = Array.from(paletGroups.values());
+        const matArray = Array.from(materialGroups.values());
 
         let html = '<div class="flex flex-col gap-4 pb-10">';
-        html += `<p class="text-white/50 text-[12px] font-bold mb-2 uppercase tracking-widest px-2">${paletArray.length} Kartu Palet Sampling (${mergedSamplingItems.length} item)</p>`;
+        html += `<p class="text-white/50 text-[12px] font-bold mb-2 uppercase tracking-widest px-2">${matArray.length} Grup Material (${mergedSamplingItems.length} item)</p>`;
 
-        let currentGroupKey = null;
+        let currentHeaderKey = null;
 
-        paletArray.forEach((palet, pi) => {
-            const groupKey = palet.shipNum + '::' + palet.cont + '::' + palet.supplier;
+        // Wrapper function to handle opening the group
+        if (!window.openMaterialGroupInspection) {
+            window.openMaterialGroupInspection = function(indicesStr) {
+                const indices = JSON.parse(indicesStr);
+                window.bulkSelectedItems.clear();
+                indices.forEach(idx => window.bulkSelectedItems.add(idx));
+                window.openBulkInspection();
+            };
+        }
+
+        matArray.forEach((mg, pi) => {
+            const headerKey = mg.shipNum + '::' + mg.cont + '::' + mg.supplier;
             
-            if (groupKey !== currentGroupKey) {
-                const combinedText = palet.shipNum ? `V${palet.shipNum} (${palet.cont}) ${palet.supplier}` : `${palet.cont} ${palet.supplier}`;
+            if (headerKey !== currentHeaderKey) {
+                const combinedText = mg.shipNum ? `V${mg.shipNum} (${mg.cont}) ${mg.supplier}` : `${mg.cont} ${mg.supplier}`;
                 html += `
                 <div class="mt-4 mb-1 px-1 flex flex-wrap items-center gap-2">
                     <span class="bg-[#33a9ff]/20 text-[#33a9ff] px-3 py-1.5 rounded-lg text-[13px] font-bold border border-[#33a9ff]/20 flex items-center gap-1.5">
@@ -535,122 +545,57 @@ async function loadSampling() {
                         ${escapeHtml(combinedText)}
                     </span>
                 </div>`;
-                currentGroupKey = groupKey;
+                currentHeaderKey = headerKey;
             }
 
-            const isSingleItem = palet.items.length === 1;
-            const firstItem = palet.items[0];
-            const firstIdx = palet.origIndices[0];
+            const allStatuses = mg.items.map(it => it.status_inspeksi || 'Menunggu Inspeksi');
+            const allDone = allStatuses.every(s => s !== 'Menunggu Inspeksi' && s !== 'Perlu Sampling');
+            const anyDone = allStatuses.some(s => s !== 'Menunggu Inspeksi' && s !== 'Perlu Sampling');
+            const aggStatusColor = allDone ? '#6ee7b7' : anyDone ? '#fb923c' : 'rgba(255,255,255,0.1)';
+            
+            const safeNama = escapeHtml(mg.nama_material || 'Tanpa Nama');
+            const samp = getSamplingStandard(mg.nama_material, mg.totalQty);
 
-            if (isSingleItem) {
-                // ── Single item card (unchanged behavior) ──
-                const item = firstItem;
-                const status = item.status_inspeksi || 'Menunggu Inspeksi';
-                const statusColor = sc(status);
-                const safeNama = escapeHtml(item.nama_material || 'Tanpa Nama');
-                const safeKet = escapeHtml(item.keterangan || '');
-                const samp = getSamplingStandard(item.nama_material, item.jumlah_data);
-                const qtyText = escapeHtml(item.jumlah_data) || '-';
-                const unitText = escapeHtml(item.satuan) || 'PCS';
-                const kemasanText = escapeHtml(item.jumlah_kemasan) || '-';
-                const kemasanUnitText = escapeHtml(item.satuan_kemasan) || '';
-
-                html += `
-                <div id="item-card-${firstIdx}" class="rounded-[16px] p-4 cursor-pointer active:bg-white/5 transition-colors relative bg-[#1C212D] border border-white/5" 
-                     onclick="window.openInspection(${firstIdx})">
-                     <div id="item-checkbox-${firstIdx}" class="absolute top-4 right-4 p-2 -m-2 z-10" onclick="window.toggleSelectItem(event, ${firstIdx})">
-                         <span class="material-symbols-outlined text-white/20" id="item-check-icon-${firstIdx}">check_box_outline_blank</span>
-                     </div>
-                    <div class="flex items-start gap-3">
-                        <div class="flex-1 min-w-0 pr-8">
-                            <div class="text-[15px] text-white/90 font-medium leading-relaxed mb-3 whitespace-pre-wrap">${pi+1}. ${safeNama}${safeKet ? '\\n' + safeKet : ''}</div>
-                            <div class="flex flex-col gap-2.5">
-                                <div class="flex flex-col gap-1.5 text-[12px]">
-                                    <div class="flex items-center justify-between text-white/60">
-                                        <span class="font-medium shrink-0">Qty: ${qtyText} ${unitText}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-[#33a9ff]/80">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="material-symbols-outlined text-[14px]">category</span>
-                                            <span class="truncate">${samp.category}</span>
-                                        </div>
-                                        <span class="text-white/50 text-[11px]">Kemasan: <strong class="text-[#4ADE80]">${kemasanText} ${kemasanUnitText}</strong></span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between mt-0.5">
-                                    <span class="text-[#33a9ff] font-medium text-[12px] bg-[#33a9ff]/10 px-2.5 py-1 rounded-md">
-                                        Sampling: ${samp.pct}% (${samp.count} ${samp.pct > 0 && unitText.toLowerCase() === 'pcs' ? 'PCS' : unitText})
-                                    </span>
-                                    <div class="w-8 h-1 rounded-full shrink-0" style="background:${statusColor}"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-            } else {
-                // ── Multi-item PALET card (NEW grouped design) ──
-                const kemasanLabel = `${escapeHtml(palet.kemasan)} ${escapeHtml(palet.kemasanUnit)}`;
+            html += `
+            <div id="item-card-${mg.origIndices[0]}" class="rounded-[16px] overflow-hidden bg-[#1C212D] border border-white/5 mb-2 relative">
+                <!-- Select Checkbox for bulk -->
+                <div id="item-checkbox-${mg.origIndices[0]}" class="absolute top-3 right-3 p-2 -m-2 z-10" onclick="event.stopPropagation(); window.toggleSelectItem(event, ${mg.origIndices[0]})" style="display:none;">
+                    <span class="material-symbols-outlined text-white/20" id="item-check-icon-${mg.origIndices[0]}">check_box_outline_blank</span>
+                </div>
                 
-                // Calculate aggregate status
-                const allStatuses = palet.items.map(it => it.status_inspeksi || 'Menunggu Inspeksi');
-                const allDone = allStatuses.every(s => s !== 'Menunggu Inspeksi' && s !== 'Perlu Sampling');
-                const anyDone = allStatuses.some(s => s !== 'Menunggu Inspeksi' && s !== 'Perlu Sampling');
-                const aggStatusColor = allDone ? '#6ee7b7' : anyDone ? '#fb923c' : 'rgba(255,255,255,0.1)';
-
-                html += `
-                <div id="item-card-${firstIdx}" class="rounded-[16px] overflow-hidden bg-[#1C212D] border border-white/5">
-                    <!-- PALET HEADER -->
-                    <div class="p-4 border-b border-white/5 bg-[#1a2236]">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-[#4ADE80] text-[20px]">view_in_ar</span>
-                                <span class="text-white font-bold text-[14px]">${kemasanLabel}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-white/40 text-[11px]">${palet.items.length} barang</span>
-                                <div class="w-8 h-1 rounded-full shrink-0" style="background:${aggStatusColor}"></div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 text-[12px] text-white/50">
-                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">scale</span> Total: <strong class="text-white/80">${palet.totalQty.toLocaleString()}</strong></span>
+                <div class="p-4 cursor-pointer active:bg-white/5 transition-colors" onclick="window.openMaterialGroupInspection('[${mg.origIndices.join(',')}]')">
+                    <div class="flex items-start justify-between mb-3 gap-2">
+                        <div class="flex-1 text-white/90 font-medium text-[14px] leading-snug line-clamp-2 pr-6">${safeNama}</div>
+                        <div class="flex items-center gap-2 shrink-0 mt-0.5">
+                            <div class="w-8 h-1 rounded-full shrink-0" style="background:${aggStatusColor}"></div>
                         </div>
                     </div>
-                    <!-- ITEM LIST INSIDE PALET -->`;
-
-                palet.items.forEach((item, subIdx) => {
-                    const idx = palet.origIndices[subIdx];
-                    const status = item.status_inspeksi || 'Menunggu Inspeksi';
-                    const statusColor = sc(status);
-                    const safeNama = escapeHtml(item.nama_material || 'Tanpa Nama');
-                    const samp = getSamplingStandard(item.nama_material, item.jumlah_data);
-                    const qtyText = escapeHtml(item.jumlah_data) || '-';
-                    const unitText = escapeHtml(item.satuan) || 'PCS';
-                    const isLast = subIdx === palet.items.length - 1;
-
-                    html += `
-                    <div id="palet-sub-${idx}" class="p-3 px-4 cursor-pointer active:bg-white/5 transition-colors relative ${!isLast ? 'border-b border-white/[0.04]' : ''}"
-                         onclick="window.openInspection(${idx})">
-                         <div id="item-checkbox-${idx}" class="absolute top-3 right-3 p-2 -m-2 z-10" onclick="window.toggleSelectItem(event, ${idx})">
-                             <span class="material-symbols-outlined text-white/20" id="item-check-icon-${idx}">check_box_outline_blank</span>
-                         </div>
-                        <div class="pr-8">
-                            <div class="text-[13px] text-white/85 font-medium leading-snug mb-1.5 line-clamp-2">${safeNama}</div>
-                            <div class="flex items-center justify-between text-[11px]">
-                                <span class="text-white/50">Qty: ${qtyText} ${unitText}</span>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[#33a9ff]/70 bg-[#33a9ff]/10 px-2 py-0.5 rounded text-[10px]">
-                                        ${samp.pct}% (${samp.count})
-                                    </span>
-                                    <div class="w-6 h-1 rounded-full shrink-0" style="background:${statusColor}"></div>
-                                </div>
+                    
+                    <div class="flex items-stretch gap-3 mt-1">
+                        <!-- QTY & Proporsi -->
+                        <div class="flex-1 bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center text-center">
+                            <div class="text-[10px] text-white/50 mb-1 uppercase tracking-wider font-bold">Qty & Proporsi</div>
+                            <div class="text-[#33a9ff] font-black text-[15px] leading-tight">${mg.totalQty.toLocaleString('id-ID')} ${mg.satuan}</div>
+                            <div class="mt-1.5 bg-[#33a9ff]/20 text-[#33a9ff] text-[10px] px-2 py-0.5 rounded font-bold">
+                                Sample: ${samp.count} (${samp.pct}%)
                             </div>
                         </div>
-                    </div>`;
-                });
-
-                html += `</div>`;
-            }
+                        
+                        <!-- Kemasan -->
+                        <div class="flex-1 bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center text-center">
+                            <div class="text-[10px] text-white/50 mb-1.5 uppercase tracking-wider font-bold">Kemasan</div>
+                            <div class="flex flex-col gap-1 w-full max-h-[60px] overflow-y-auto custom-scrollbar px-1">
+                                ${mg.items.map(it => {
+                                    const kText = (it.jumlah_kemasan || '-') + ' ' + (it.satuan_kemasan || '');
+                                    return `<div class="text-[#4ADE80] font-bold text-[12px] truncate">${escapeHtml(kText.trim())}</div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
         });
+
         
         html += '</div>';
         el.innerHTML = html;
