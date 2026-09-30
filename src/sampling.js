@@ -149,6 +149,33 @@ async function loadSamplingData() {
             rowspans[i] = span;
         }
 
+        // Pre-calculate rowspans for QTY (grouped by nama_material)
+        const qtyRowspans = new Array(items.length).fill(1);
+        const qtyTotals = new Array(items.length).fill(0);
+        
+        for (let i = 0; i < items.length; i++) {
+            if (qtyRowspans[i] === 0) continue;
+            const currentMaterial = items[i].nama_material ? items[i].nama_material.trim().toLowerCase() : '';
+            let span = 1;
+            let totalQty = parseFloat(items[i].jumlah_data) || 0;
+            
+            if (currentMaterial) {
+                for (let j = i + 1; j < items.length; j++) {
+                    const nextMaterial = items[j].nama_material ? items[j].nama_material.trim().toLowerCase() : '';
+                    if (currentMaterial === nextMaterial) {
+                        span++;
+                        totalQty += parseFloat(items[j].jumlah_data) || 0;
+                        qtyRowspans[j] = 0;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            qtyRowspans[i] = span;
+            qtyTotals[i] = totalQty;
+        }
+
+
         let html = '';
         items.forEach((item, index) => {
             let shipNum = '';
@@ -224,15 +251,17 @@ async function loadSamplingData() {
                     <div class="text-on-surface-variant text-[12px] truncate max-w-[250px]" title="${supplier}"><span class="material-symbols-outlined text-[14px] align-middle">storefront</span> ${supplier}</div>
                 </td>
                 <td class="py-3 px-4 font-medium whitespace-pre-wrap">${fullNama}</td>
-                <td class="py-3 px-4 text-center">
+                ${qtyRowspans[index] > 0 ? `
+                <td class="py-3 px-4 text-center border-l border-surface-variant align-middle" rowspan="${qtyRowspans[index]}">
                     <div class="flex flex-col items-center gap-1">
-                        <div class="font-medium whitespace-nowrap mb-1">${qtyText} ${unitText}</div>
+                        <div class="font-medium whitespace-nowrap mb-1">${qtyTotals[index]} ${unitText}</div>
                         <span class="text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-md inline-block w-fit">
-                            ${samp.pct}%
+                            ${window.getSamplingStandard(item.nama_material, qtyTotals[index]).pct}%
                         </span>
-                        <span class="text-on-surface-variant text-[11px]">${samp.count} ${samp.pct > 0 && unitText.toLowerCase() === 'pcs' ? 'PCS' : unitText}</span>
+                        <span class="text-on-surface-variant text-[11px]">${window.getSamplingStandard(item.nama_material, qtyTotals[index]).count} ${window.getSamplingStandard(item.nama_material, qtyTotals[index]).pct > 0 && unitText.toLowerCase() === 'pcs' ? 'PCS' : unitText}</span>
                     </div>
                 </td>
+                ` : ''}
                 ${rowspans[index] > 0 ? `
                 <td class="py-3 px-4 text-center border-l border-surface-variant align-middle" rowspan="${rowspans[index]}">
                     <div class="font-bold text-[#4ADE80] whitespace-nowrap">${kemasanText} ${kemasanUnit}</div>
