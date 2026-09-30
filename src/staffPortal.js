@@ -13,6 +13,75 @@ let currentShipRaw = null;
 let currentShipClean = null;
 let currentContainer = null;
 
+window.getSamplingStandard = function(itemName, qty) {
+    if (!qty || isNaN(qty)) return { pct: 0, count: 0, category: 'Tidak Diketahui' };
+    const q = parseInt(qty);
+    if (q <= 0) return { pct: 0, count: 0, category: 'Tidak Diketahui' };
+
+    const name = (itemName || '').toLowerCase();
+    
+    // Group C: Pemadam, Pompa, Valve
+    const isGroupC = name.includes('pemadam') || name.includes('apar') || name.includes('pompa') || name.includes('pump') || name.includes('valve') || name.includes('katup');
+    
+    // Group B: APD, Oli, Sparepart, Perkakas, Las
+    const isGroupB = name.includes('apd') || name.includes('oli') || name.includes('pelumas') || name.includes('sparepart') || name.includes('suku cadang') || name.includes('perkakas') || name.includes('las') || name.includes('welding') || name.includes('sarung tangan') || name.includes('sarung') || name.includes('safety') || name.includes('sepatu') || name.includes('helm') || name.includes('kacamata') || name.includes('masker') || name.includes('earplug');
+    
+    // Group D: Elektronik, Bahan Kimia, Cat, Lab, Air
+    const isGroupD = name.includes('elektronik') || name.includes('kimia') || name.includes('chemical') || name.includes('cat') || name.includes('paint') || name.includes('lab') || name.includes('air') || name.includes('water');
+    
+    let pct = 1;
+    let catStr = 'Jenis Lainnya (Umum)';
+    
+    if (isGroupC) {
+        catStr = 'Pompa, Valve & Pemadam';
+        if (q <= 10) pct = 100;
+        else if (q <= 50) pct = 30;
+        else if (q <= 100) pct = 25;
+        else if (q <= 500) pct = 20;
+        else if (q <= 1000) pct = 15;
+        else if (q <= 5000) pct = 12;
+        else if (q <= 10000) pct = 8;
+        else pct = 3;
+    } else if (isGroupB) {
+        catStr = 'APD, Oli, Sparepart & Perkakas';
+        if (q <= 10) pct = 100;
+        else if (q <= 50) pct = 30;
+        else if (q <= 100) pct = 25;
+        else if (q <= 500) pct = 20;
+        else if (q <= 1000) pct = 15;
+        else if (q <= 5000) pct = 10;
+        else if (q <= 10000) pct = 5;
+        else pct = 2; 
+    } else if (isGroupD) {
+        catStr = 'Kimia, Elektronik & Khusus';
+        if (q <= 10) pct = 100;
+        else if (q <= 50) pct = 30;
+        else if (q <= 100) pct = 25;
+        else if (q <= 500) pct = 20;
+        else if (q <= 1000) pct = 12;
+        else if (q <= 5000) pct = 8;
+        else if (q <= 10000) pct = 3;
+        else pct = 1;
+    } else {
+        // Default Group A
+        if (q <= 10) pct = 100;
+        else if (q <= 50) pct = 30;
+        else if (q <= 100) pct = 20;
+        else if (q <= 500) pct = 10;
+        else if (q <= 1000) pct = 8;
+        else if (q <= 5000) pct = 5;
+        else if (q <= 10000) pct = 3;
+        else pct = 1;
+    }
+
+    if (q > 10000 && (name.includes('perkakas') || name.includes('las') || name.includes('welding'))) {
+        pct = 1;
+    }
+
+    let count = Math.ceil((q * pct) / 100);
+    return { pct, count, category: catStr };
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     const authData = await requireStaffAuth();
     if (!authData) return;
@@ -21,7 +90,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Admin override for nav bar
     if (currentProfile?.role === 'admin') {
-        document.getElementById('nav-btn-scanner')?.classList.add('hidden');
         document.getElementById('nav-btn-users')?.classList.remove('hidden');
         initUserManagementMobile();
     }
@@ -30,7 +98,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     setupNavigation();
     setupSearchBars();
-    loadOverview();
+    
+    // Check URL Hash or Session Storage for deep linking
+    const savedTab = sessionStorage.getItem('activeTab');
+    if (window.location.hash === '#sampling') {
+        const samplingBtn = document.querySelector('.nav-item[data-tab="tab-sampling"]');
+        if (samplingBtn) samplingBtn.click();
+    } else if (savedTab) {
+        const btn = document.querySelector(`.nav-item[data-tab="${savedTab}"]`);
+        if (btn) btn.click();
+        else loadOverview();
+    } else {
+        loadOverview();
+    }
+    
     loadProfileUI();
     setupBackButtons();
 });
@@ -72,15 +153,36 @@ function setupSearchBars() {
     attachSearch('btn-search-items', 'search-bar-items', 'input-search-items', '#items-list-content > div');
 }
 
+window.globalDataCache = null;
+window.getGlobalData = async function(forceRefresh = false) {
+    if (window.globalDataCache && !forceRefresh) return window.globalDataCache;
+    // We only select the columns needed for Overview, Ships, and AI
+    const data = await fetchAllRows('penerimaan_kapal', 'id, nama_file, nomor_kontainer, status_inspeksi, tanggal_inspeksi, created_at, supplier, nama_material, satuan, jumlah_data, jumlah_kemasan, satuan_kemasan, foto_inspeksi, keterangan');
+    window.globalDataCache = data;
+    return window.globalDataCache;
+};
+
 async function fetchAllRows(table, selectColumns, filters = {}) {
+    let countQuery = supabase.from(table).select('*', { count: 'exact', head: true });
+    for (const [k, v] of Object.entries(filters)) countQuery = countQuery.eq(k, v);
+    
+    const { count, error: countErr } = await countQuery;
+    if (countErr || !count) return [];
+
     const PAGE_SIZE = 1000;
-    let allData = [], from = 0, hasMore = true;
-    while (hasMore) {
-        let query = supabase.from(table).select(selectColumns).order('id', { ascending: true }).range(from, from + PAGE_SIZE - 1);
-        for (const [k, v] of Object.entries(filters)) query = query.eq(k, v);
-        const { data, error } = await query;
-        if (error) { console.error(error); break; }
-        if (data && data.length > 0) { allData = allData.concat(data); from += PAGE_SIZE; if (data.length < PAGE_SIZE) hasMore = false; } else hasMore = false;
+    const promises = [];
+    
+    for (let from = 0; from < count; from += PAGE_SIZE) {
+        let q = supabase.from(table).select(selectColumns).order('id', { ascending: true }).range(from, from + PAGE_SIZE - 1);
+        for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
+        promises.push(q);
+    }
+    
+    const results = await Promise.all(promises);
+    let allData = [];
+    for (const res of results) {
+        if (res.error) console.error(res.error);
+        else if (res.data) allData = allData.concat(res.data);
     }
     return allData;
 }
@@ -171,11 +273,22 @@ function setupNavigation() {
             navItems.forEach(n => n.classList.remove('active'));
             tabContents.forEach(t => t.classList.remove('active'));
             item.classList.add('active');
+            
+            // Tutup semua layer/panel yang menimpa layar utama
+            closePanel('panel-containers');
+            closePanel('panel-items');
+            closePanel('panel-inspection');
+            
             const tid = item.getAttribute('data-tab');
             const ttitle = item.getAttribute('data-title');
+            
+            // Simpan tab yang aktif ke sessionStorage agar tidak hilang saat refresh
+            sessionStorage.setItem('activeTab', tid);
+
             document.getElementById(tid)?.classList.add('active');
             if (appBarTitle && ttitle) appBarTitle.textContent = ttitle;
             if (tid === 'tab-armada' && !document.querySelector('.ship-card')) loadShips();
+            if (tid === 'tab-sampling') loadSampling();
             
             if (btnSearchMain) {
                 const btnUpload = document.getElementById('btn-upload-excel');
@@ -198,7 +311,7 @@ async function loadOverview() {
     const el = document.getElementById('tab-overview');
     showLoading(el, 'Memuat Ringkasan...');
     try {
-        const data = await fetchAllRows('penerimaan_kapal', 'nama_file, nomor_kontainer, status_inspeksi, tanggal_inspeksi, created_at');
+        const data = await window.getGlobalData();
         const cmap = new Map();
         for (const row of data) {
             const file = row.nama_file || 'Tanpa File';
@@ -273,7 +386,7 @@ async function loadShips() {
     const el = document.getElementById('tab-armada');
     showLoading(el, 'Memuat Daftar Armada...');
     try {
-        const data = await fetchAllRows('penerimaan_kapal', 'nama_file, nomor_kontainer, status_inspeksi');
+        const data = await window.getGlobalData();
         if (!data || data.length === 0) { showEmpty(el, 'directions_boat', 'Belum ada data armada kapal.'); return; }
         const smap = new Map();
         for (const row of data) {
@@ -294,6 +407,257 @@ async function loadShips() {
         html += '</div>';
         el.innerHTML = html;
     } catch(err) { console.error(err); el.innerHTML = `<div class="text-red-400 p-4 text-center">${err.message}</div>`; }
+}
+
+// ── SAMPLING ──
+async function loadSampling() {
+    const el = document.getElementById('tab-sampling');
+    showLoading(el, 'Memuat Data Sampling...');
+    try {
+        const data = await window.getGlobalData();
+        // Filter out items that need sampling
+        const samplingItems = data.filter(r => r.status_inspeksi === 'Perlu Sampling');
+        
+        if (samplingItems.length === 0) {
+            showEmpty(el, 'science', 'Tidak ada barang yang menunggu sampling.');
+            return;
+        }
+
+        // Group items with same Ship, Container, Supplier, and Material Name
+        const groupedMap = new Map();
+        
+        samplingItems.forEach(item => {
+            let shipNum = '';
+            if (item.nama_file) {
+                const match = item.nama_file.match(/\d+/);
+                if (match) shipNum = match[0];
+            }
+            const cont = item.nomor_kontainer || 'Tanpa Kontainer';
+            const supplier = item.supplier || 'Tanpa Supplier';
+            const material = item.nama_material || 'Tanpa Nama';
+            
+            const groupKey = `${shipNum}::${cont}::${supplier}::${material}`;
+            
+            if (groupedMap.has(groupKey)) {
+                const existing = groupedMap.get(groupKey);
+                if (!existing.ids) existing.ids = [existing.id];
+                existing.ids.push(item.id);
+                
+                // Summarize jumlah_data if numeric
+                const eNum = parseFloat(existing.jumlah_data) || 0;
+                const iNum = parseFloat(item.jumlah_data) || 0;
+                if (!isNaN(eNum) && !isNaN(iNum)) {
+                    existing.jumlah_data = eNum + iNum;
+                }
+            } else {
+                groupedMap.set(groupKey, { ...item, ids: [item.id] });
+            }
+        });
+        
+        const mergedSamplingItems = Array.from(groupedMap.values());
+
+        // Sort items so we can group them by Ship and Container
+        mergedSamplingItems.sort((a, b) => {
+            let sa = '', sb = '';
+            if (a.nama_file) { const ma = a.nama_file.match(/\d+/); if(ma) sa = ma[0]; }
+            if (b.nama_file) { const mb = b.nama_file.match(/\d+/); if(mb) sb = mb[0]; }
+            const ka = sa + '::' + (a.nomor_kontainer||'');
+            const kb = sb + '::' + (b.nomor_kontainer||'');
+            return ka.localeCompare(kb);
+        });
+
+        window.currentItemsData = mergedSamplingItems;
+        window.bulkSelectedItems.clear(); // Reset bulk selection
+        window.updateBulkUI();
+        
+        // Define helper functions
+        function sc(s) {
+            if(s==='Sesuai') return '#6ee7b7'; if(s==='Tidak Sesuai') return '#f87171';
+            if(s==='Tidak Perlu Dicek') return '#e0e2ed'; return 'rgba(255,255,255,0.1)';
+        }
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // ── PALET GROUPING: Group items that share the same pallet (kemasan) ──
+        // Key = ship + container + supplier + jumlah_kemasan + satuan_kemasan
+        const paletGroups = new Map();
+        mergedSamplingItems.forEach((item, origIdx) => {
+            let shipNum = '';
+            if (item.nama_file) {
+                const match = item.nama_file.match(/\d+/);
+                if (match) shipNum = match[0];
+            }
+            const cont = item.nomor_kontainer || 'Tanpa Kontainer';
+            const supplier = item.supplier || 'Tanpa Supplier';
+            const kemasan = item.jumlah_kemasan || '';
+            const kemasanUnit = item.satuan_kemasan || '';
+
+            // Items with no kemasan info get their own individual card
+            const paletKey = (kemasan && kemasanUnit)
+                ? `${shipNum}::${cont}::${supplier}::${kemasan}::${kemasanUnit}`
+                : `SOLO::${origIdx}`;
+
+            if (!paletGroups.has(paletKey)) {
+                paletGroups.set(paletKey, {
+                    shipNum, cont, supplier, kemasan, kemasanUnit,
+                    items: [],
+                    origIndices: [],
+                    totalQty: 0,
+                    ids: []
+                });
+            }
+            const pg = paletGroups.get(paletKey);
+            pg.items.push(item);
+            pg.origIndices.push(origIdx);
+            pg.totalQty += (parseFloat(item.jumlah_data) || 0);
+            if (item.ids) pg.ids.push(...item.ids);
+            else if (item.id) pg.ids.push(item.id);
+        });
+
+        const paletArray = Array.from(paletGroups.values());
+
+        let html = '<div class="flex flex-col gap-4 pb-10">';
+        html += `<p class="text-white/50 text-[12px] font-bold mb-2 uppercase tracking-widest px-2">${paletArray.length} Kartu Palet Sampling (${mergedSamplingItems.length} item)</p>`;
+
+        let currentGroupKey = null;
+
+        paletArray.forEach((palet, pi) => {
+            const groupKey = palet.shipNum + '::' + palet.cont + '::' + palet.supplier;
+            
+            if (groupKey !== currentGroupKey) {
+                const combinedText = palet.shipNum ? `V${palet.shipNum} (${palet.cont}) ${palet.supplier}` : `${palet.cont} ${palet.supplier}`;
+                html += `
+                <div class="mt-4 mb-1 px-1 flex flex-wrap items-center gap-2">
+                    <span class="bg-[#33a9ff]/20 text-[#33a9ff] px-3 py-1.5 rounded-lg text-[13px] font-bold border border-[#33a9ff]/20 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">inventory_2</span>
+                        ${escapeHtml(combinedText)}
+                    </span>
+                </div>`;
+                currentGroupKey = groupKey;
+            }
+
+            const isSingleItem = palet.items.length === 1;
+            const firstItem = palet.items[0];
+            const firstIdx = palet.origIndices[0];
+
+            if (isSingleItem) {
+                // ── Single item card (unchanged behavior) ──
+                const item = firstItem;
+                const status = item.status_inspeksi || 'Menunggu Inspeksi';
+                const statusColor = sc(status);
+                const safeNama = escapeHtml(item.nama_material || 'Tanpa Nama');
+                const safeKet = escapeHtml(item.keterangan || '');
+                const samp = getSamplingStandard(item.nama_material, item.jumlah_data);
+                const qtyText = escapeHtml(item.jumlah_data) || '-';
+                const unitText = escapeHtml(item.satuan) || 'PCS';
+                const kemasanText = escapeHtml(item.jumlah_kemasan) || '-';
+                const kemasanUnitText = escapeHtml(item.satuan_kemasan) || '';
+
+                html += `
+                <div id="item-card-${firstIdx}" class="rounded-[16px] p-4 cursor-pointer active:bg-white/5 transition-colors relative bg-[#1C212D] border border-white/5" 
+                     onclick="window.openInspection(${firstIdx})">
+                     <div id="item-checkbox-${firstIdx}" class="absolute top-4 right-4 p-2 -m-2 z-10" onclick="window.toggleSelectItem(event, ${firstIdx})">
+                         <span class="material-symbols-outlined text-white/20" id="item-check-icon-${firstIdx}">check_box_outline_blank</span>
+                     </div>
+                    <div class="flex items-start gap-3">
+                        <div class="flex-1 min-w-0 pr-8">
+                            <div class="text-[15px] text-white/90 font-medium leading-relaxed mb-3 whitespace-pre-wrap">${pi+1}. ${safeNama}${safeKet ? '\\n' + safeKet : ''}</div>
+                            <div class="flex flex-col gap-2.5">
+                                <div class="flex flex-col gap-1.5 text-[12px]">
+                                    <div class="flex items-center justify-between text-white/60">
+                                        <span class="font-medium shrink-0">Qty: ${qtyText} ${unitText}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[#33a9ff]/80">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-[14px]">category</span>
+                                            <span class="truncate">${samp.category}</span>
+                                        </div>
+                                        <span class="text-white/50 text-[11px]">Kemasan: <strong class="text-[#4ADE80]">${kemasanText} ${kemasanUnitText}</strong></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between mt-0.5">
+                                    <span class="text-[#33a9ff] font-medium text-[12px] bg-[#33a9ff]/10 px-2.5 py-1 rounded-md">
+                                        Sampling: ${samp.pct}% (${samp.count} ${samp.pct > 0 && unitText.toLowerCase() === 'pcs' ? 'PCS' : unitText})
+                                    </span>
+                                    <div class="w-8 h-1 rounded-full shrink-0" style="background:${statusColor}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                // ── Multi-item PALET card (NEW grouped design) ──
+                const kemasanLabel = `${escapeHtml(palet.kemasan)} ${escapeHtml(palet.kemasanUnit)}`;
+                
+                // Calculate aggregate status
+                const allStatuses = palet.items.map(it => it.status_inspeksi || 'Menunggu Inspeksi');
+                const allDone = allStatuses.every(s => s !== 'Menunggu Inspeksi' && s !== 'Perlu Sampling');
+                const anyDone = allStatuses.some(s => s !== 'Menunggu Inspeksi' && s !== 'Perlu Sampling');
+                const aggStatusColor = allDone ? '#6ee7b7' : anyDone ? '#fb923c' : 'rgba(255,255,255,0.1)';
+
+                html += `
+                <div id="item-card-${firstIdx}" class="rounded-[16px] overflow-hidden bg-[#1C212D] border border-white/5">
+                    <!-- PALET HEADER -->
+                    <div class="p-4 border-b border-white/5 bg-[#1a2236]">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[#4ADE80] text-[20px]">view_in_ar</span>
+                                <span class="text-white font-bold text-[14px]">${kemasanLabel}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-white/40 text-[11px]">${palet.items.length} barang</span>
+                                <div class="w-8 h-1 rounded-full shrink-0" style="background:${aggStatusColor}"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-[12px] text-white/50">
+                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">scale</span> Total: <strong class="text-white/80">${palet.totalQty.toLocaleString()}</strong></span>
+                        </div>
+                    </div>
+                    <!-- ITEM LIST INSIDE PALET -->`;
+
+                palet.items.forEach((item, subIdx) => {
+                    const idx = palet.origIndices[subIdx];
+                    const status = item.status_inspeksi || 'Menunggu Inspeksi';
+                    const statusColor = sc(status);
+                    const safeNama = escapeHtml(item.nama_material || 'Tanpa Nama');
+                    const samp = getSamplingStandard(item.nama_material, item.jumlah_data);
+                    const qtyText = escapeHtml(item.jumlah_data) || '-';
+                    const unitText = escapeHtml(item.satuan) || 'PCS';
+                    const isLast = subIdx === palet.items.length - 1;
+
+                    html += `
+                    <div id="palet-sub-${idx}" class="p-3 px-4 cursor-pointer active:bg-white/5 transition-colors relative ${!isLast ? 'border-b border-white/[0.04]' : ''}"
+                         onclick="window.openInspection(${idx})">
+                         <div id="item-checkbox-${idx}" class="absolute top-3 right-3 p-2 -m-2 z-10" onclick="window.toggleSelectItem(event, ${idx})">
+                             <span class="material-symbols-outlined text-white/20" id="item-check-icon-${idx}">check_box_outline_blank</span>
+                         </div>
+                        <div class="pr-8">
+                            <div class="text-[13px] text-white/85 font-medium leading-snug mb-1.5 line-clamp-2">${safeNama}</div>
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="text-white/50">Qty: ${qtyText} ${unitText}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[#33a9ff]/70 bg-[#33a9ff]/10 px-2 py-0.5 rounded text-[10px]">
+                                        ${samp.pct}% (${samp.count})
+                                    </span>
+                                    <div class="w-6 h-1 rounded-full shrink-0" style="background:${statusColor}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+
+                html += `</div>`;
+            }
+        });
+        
+        html += '</div>';
+        el.innerHTML = html;
+    } catch (err) {
+        console.error(err);
+        el.innerHTML = `<div class="text-red-400 p-4 text-center">${err.message}</div>`;
+    }
 }
 
 // ── PANEL KONTAINER ──
@@ -348,12 +712,21 @@ window.openContainer = async function(containerName) {
     currentContainer = containerName;
     document.getElementById('panel-items-title').textContent = containerName;
     document.getElementById('panel-items-subtitle').textContent = currentShipClean;
+    
+    // Clear any previous bulk selection when opening a new container
+    if (window.bulkSelectedItems) {
+        window.bulkSelectedItems.clear();
+        if (typeof window.updateBulkUI === 'function') {
+            window.updateBulkUI();
+        }
+    }
+    
     openPanel('panel-items');
     const content = document.getElementById('items-list-content');
     showLoading(content, 'Memuat Data Barang...');
     try {
         let query = supabase.from('penerimaan_kapal')
-            .select('id, nama_material, nomor_pembelian, jumlah_data, satuan, nomor_kontrak, penanggung_jawab, status_inspeksi, foto_inspeksi, keterangan, nama_staf, id_staf, nama_file, nomor_kontainer')
+            .select('id, nama_material, supplier, jumlah_data, satuan, nomor_kontrak, penanggung_jawab, status_inspeksi, foto_inspeksi, keterangan, nama_staf, id_staf, nama_file, nomor_kontainer')
             .eq('nama_file', currentShipRaw).order('id', {ascending:true});
         if (containerName === 'Tanpa Kontainer') query = query.or('nomor_kontainer.is.null,nomor_kontainer.eq.,nomor_kontainer.eq. ');
         else query = query.eq('nomor_kontainer', containerName);
@@ -382,7 +755,13 @@ window.openContainer = async function(containerName) {
             const safeNama = escapeHtml(item.nama_material || 'Tanpa Nama');
             const safeKet = escapeHtml(item.keterangan || '');
             
-            // Design matches screenshot: Dark rounded card, full text wrapped, PO/Qty at bottom
+            // Calculate sampling
+            const samp = getSamplingStandard(item.nama_material, item.jumlah_data);
+            const supplierText = escapeHtml(item.supplier) || 'Tanpa Supplier';
+            const qtyText = escapeHtml(item.jumlah_data) || '-';
+            const unitText = escapeHtml(item.satuan) || 'PCS';
+            
+            // Design matches screenshot: Dark rounded card, full text wrapped, Sampling at bottom
             html += `
             <div id="item-card-${i}" class="rounded-[16px] p-4 cursor-pointer active:bg-white/5 transition-colors relative bg-[#1C212D] border border-white/5" 
                  onclick="window.openInspection(${i})">
@@ -392,9 +771,26 @@ window.openContainer = async function(containerName) {
                 <div class="flex items-start gap-3">
                     <div class="flex-1 min-w-0 pr-8">
                         <div class="text-[15px] text-white/90 font-medium leading-relaxed mb-3 whitespace-pre-wrap">${i+1}. ${safeNama}${safeKet ? '\\n' + safeKet : ''}</div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-white/40 text-[12px]">PO: ${escapeHtml(item.nomor_pembelian) || '-'} | Qty: ${escapeHtml(item.jumlah_data) || '-'}</span>
-                            <div class="w-8 h-1 rounded-full shrink-0" style="background:${statusColor}"></div>
+                        <div class="flex flex-col gap-2.5">
+                            <div class="flex flex-col gap-1.5 text-[12px]">
+                                <div class="flex items-center justify-between text-white/60">
+                                    <div class="flex items-center gap-1.5 min-w-0 pr-2 text-white/50">
+                                        <span class="material-symbols-outlined text-[14px]">storefront</span>
+                                        <span class="truncate">${supplierText}</span>
+                                    </div>
+                                    <span class="font-medium shrink-0">Qty: ${qtyText} ${unitText}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 text-[#33a9ff]/80">
+                                    <span class="material-symbols-outlined text-[14px]">category</span>
+                                    <span class="truncate">${samp.category}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between mt-0.5">
+                                <span class="text-[#33a9ff] font-medium text-[12px] bg-[#33a9ff]/10 px-2.5 py-1 rounded-md">
+                                    Sampling: ${samp.pct}% (${samp.count} ${samp.pct > 0 && unitText.toLowerCase() === 'pcs' ? 'PCS' : unitText})
+                                </span>
+                                <div class="w-8 h-1 rounded-full shrink-0" style="background:${statusColor}"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -415,21 +811,33 @@ window.bulkSelectedItems = new Set();
 window.toggleSelectAll = function() {
     const icon = document.getElementById('icon-bulk-select');
     
-    if (window.currentItemsData && window.bulkSelectedItems.size === window.currentItemsData.length) {
-        // Deselect all
-        window.bulkSelectedItems.clear();
-        if (icon) icon.textContent = 'check_box_outline_blank';
-    } else {
-        // Select all
-        window.bulkSelectedItems.clear();
-        if (window.currentItemsData) {
-            window.currentItemsData.forEach((_, i) => window.bulkSelectedItems.add(i));
-        }
-        if (icon) icon.textContent = 'check_box';
-    }
-    
-    // Update all cards UI
     if (window.currentItemsData) {
+        let visibleCount = 0;
+        let selectedVisibleCount = 0;
+        let visibleIndices = [];
+        
+        window.currentItemsData.forEach((_, i) => {
+            const card = document.getElementById('item-card-' + i);
+            if (card && card.style.display !== 'none') {
+                visibleCount++;
+                visibleIndices.push(i);
+                if (window.bulkSelectedItems.has(i)) {
+                    selectedVisibleCount++;
+                }
+            }
+        });
+        
+        if (visibleCount > 0 && selectedVisibleCount === visibleCount) {
+            // All visible are selected, so deselect them all
+            visibleIndices.forEach(i => window.bulkSelectedItems.delete(i));
+            if (icon) icon.textContent = 'check_box_outline_blank';
+        } else {
+            // Select all visible
+            visibleIndices.forEach(i => window.bulkSelectedItems.add(i));
+            if (icon) icon.textContent = 'check_box';
+        }
+        
+        // Update all cards UI
         window.currentItemsData.forEach((_, i) => {
             const isSelected = window.bulkSelectedItems.has(i);
             const iconCb = document.getElementById('item-check-icon-' + i);
@@ -496,10 +904,15 @@ window.openInspection = function(index) {
     const status = item.status_inspeksi || '';
     
     document.getElementById('panel-inspection-title').textContent = item.nama_material || 'Detail Barang';
-    document.getElementById('panel-inspection-subtitle').textContent = currentContainer;
+    document.getElementById('panel-inspection-subtitle').textContent = item.nomor_kontainer || currentContainer;
     
+    // Check if we are in Sampling Tab
+    const isSamplingTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab') === 'tab-sampling';
+
     let photos = [];
-    if (item.foto_inspeksi) { try { photos = JSON.parse(item.foto_inspeksi); } catch(_) { photos = [item.foto_inspeksi]; } }
+    if (!isSamplingTab && item.foto_inspeksi) { 
+        try { photos = JSON.parse(item.foto_inspeksi); } catch(_) { photos = [item.foto_inspeksi]; } 
+    }
     window.existingPhotos = photos;
     window.newPhotoFiles = [];
 
@@ -509,6 +922,13 @@ window.openInspection = function(index) {
     }
     const safeNama = escapeHtml(item.nama_material || 'Tanpa Nama');
     const safeKet = escapeHtml(item.keterangan || '');
+    
+    // Parse existing jumlah rusak dari keterangan jika ada
+    let existingRusak = '';
+    if (item.keterangan && item.keterangan.includes('HASIL SAMPLING:')) {
+        const m = item.keterangan.match(/HASIL SAMPLING:\s*(\d+)/);
+        if (m) existingRusak = m[1];
+    }
 
     // Render Detail like Screenshot 3 (Big text card with index on left, qty badge on right)
     let detailHTML = `
@@ -523,19 +943,42 @@ window.openInspection = function(index) {
 </div>
 <div id="inspeksi-photos-preview" class="flex flex-wrap gap-2 mb-32"></div>`;
 
-    // Exact replication of Flutter SpeedDial & Bottom Dropdown
-    let formHTML = `
+    // Form HTML
+    let formHTML = '';
+    
+    if (isSamplingTab) {
+        formHTML = `
+        <div class="fixed bottom-0 left-0 w-full p-4 flex flex-col gap-3 z-50 pointer-events-auto bg-[#11141C]" style="max-width: 448px; padding-bottom: calc(1rem + env(safe-area-inset-bottom));">
+            <div class="flex gap-2">
+                <label class="bg-[#2A2D36] text-[#84A9FF] p-3.5 rounded-xl border border-white/5 flex items-center justify-center cursor-pointer active:scale-95 transition-transform">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                    <input type="file" accept="image/*" capture="environment" multiple class="hidden" onchange="handlePhotoSelect(event)">
+                </label>
+                <input type="number" id="inspeksi-jumlah-rusak" value="${existingRusak}" placeholder="Jumlah Rusak (Isi 0 jika aman)" class="flex-1 bg-[#2A2D36] text-white px-4 py-3 rounded-xl text-[15px] outline-none placeholder-white/40 border border-white/5">
+            </div>
+            <button id="btn-submit-sampling" onclick="submitInspection()" class="w-full bg-[#4ADE80] text-[#001D40] font-bold py-3.5 rounded-xl text-[15px] shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">save</span> Simpan Hasil Sampling
+            </button>
+        </div>`;
+    } else {
+        formHTML = `
 <!-- Full screen backdrop overlay for SpeedDial -->
 <div id="speed-dial-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity opacity-0" onclick="toggleSpeedDial()"></div>
 
 <div class="fixed bottom-0 left-0 w-full p-4 flex items-end justify-between z-50 pointer-events-none" style="max-width: 448px">
-    <!-- Status Dropdown (pointer-events-auto) -->
-    <div class="flex-1 mr-4 pointer-events-auto mb-2">
+    <!-- Status Dropdown and Jumlah Rusak Input (pointer-events-auto) -->
+    <div class="flex-1 mr-4 pointer-events-auto mb-2 flex flex-col gap-2">
+        
+        <div id="sampling-input-container" class="relative bg-[#1C212D] border border-white/10 rounded-xl transition-all duration-300 ${status === 'Tidak Perlu Dicek' ? 'hidden' : ''}">
+            <input type="number" id="inspeksi-jumlah-rusak" value="${existingRusak}" placeholder="Jumlah Rusak / Cacat" class="w-full bg-transparent text-white px-4 py-3 text-[14px] outline-none placeholder-white/40">
+        </div>
+
         <div class="relative bg-[#1C212D] border border-white/10 rounded-xl">
             <select id="inspeksi-status" class="w-full bg-transparent text-white p-4 pr-10 text-[15px] outline-none cursor-pointer appearance-none">
                 <option value="" disabled ${!status ? 'selected' : ''}>${status === 'Tidak Perlu Dicek' ? 'Tidak Perlu Dicek' : 'Pilih Status...'}</option>
                 <option value="Sesuai" ${status === 'Sesuai' ? 'selected' : ''}>Sesuai / 合格</option>
                 <option value="Tidak Sesuai" ${status === 'Tidak Sesuai' ? 'selected' : ''}>Tidak Sesuai / 不合格</option>
+                <option value="Perlu Sampling" ${status === 'Perlu Sampling' ? 'selected' : ''}>Perlu Sampling</option>
             </select>
             <span class="material-symbols-outlined absolute right-4 top-4 text-white/50 pointer-events-none">expand_more</span>
         </div>
@@ -546,6 +989,7 @@ window.openInspection = function(index) {
         <!-- Menu Items (hidden by default) -->
         <div id="speed-dial-menu" class="hidden flex-col items-end gap-4 mb-4 transition-all">
             
+
             <button onclick="setSkipItem()" class="flex items-center gap-4 active:scale-95 transition-transform">
                 <span class="bg-[#2A2D36] text-white/80 px-4 py-2 rounded-lg text-[14px] font-medium shadow-md">skip_item</span>
                 <div class="w-12 h-12 rounded-full bg-[#FCD34D] text-black flex items-center justify-center shadow-lg"><span class="material-symbols-outlined text-[24px]">block</span></div>
@@ -577,8 +1021,25 @@ window.openInspection = function(index) {
     </div>
 </div>
 `;
+    }
 
     document.getElementById('inspection-content').innerHTML = detailHTML + formHTML;
+    
+    if (!isSamplingTab) {
+        // Add event listener to toggle input visibility based on status
+        const statusDropdown = document.getElementById('inspeksi-status');
+        if (statusDropdown) {
+            statusDropdown.addEventListener('change', function() {
+                const sdContainer = document.getElementById('sampling-input-container');
+                if (this.value === 'Tidak Perlu Dicek') {
+                    sdContainer.classList.add('hidden');
+                } else {
+                    sdContainer.classList.remove('hidden');
+                }
+            });
+        }
+    }
+
     renderPhotosPreview();
     openPanel('panel-inspection');
 };
@@ -618,6 +1079,18 @@ window.setSkipItem = function() {
     const statusSelect = document.getElementById('inspeksi-status');
     if(statusSelect) {
         statusSelect.innerHTML = '<option value="Tidak Perlu Dicek" selected>Tidak Perlu Dicek</option>';
+    }
+    submitInspection();
+};
+
+window.setPerluSampling = function() {
+    const statusSelect = document.getElementById('inspeksi-status');
+    if(statusSelect) {
+        // Ensure the option exists
+        if (!statusSelect.querySelector('option[value="Perlu Sampling"]')) {
+            statusSelect.insertAdjacentHTML('beforeend', '<option value="Perlu Sampling">Perlu Sampling</option>');
+        }
+        statusSelect.value = "Perlu Sampling";
     }
     submitInspection();
 };
@@ -681,9 +1154,17 @@ window.removeNewPhoto = function(index) {
     renderPhotosPreview();
 };
 
+window._activeObjectUrls = []; // Track object URLs for cleanup
+
 window.renderPhotosPreview = function() {
     const container = document.getElementById('inspeksi-photos-preview');
     if (!container) return;
+    
+    // Revoke previous object URLs to prevent memory leak
+    if (window._activeObjectUrls.length > 0) {
+        window._activeObjectUrls.forEach(url => URL.revokeObjectURL(url));
+        window._activeObjectUrls = [];
+    }
     
     let html = '';
     window.existingPhotos.forEach((url, i) => {
@@ -691,6 +1172,7 @@ window.renderPhotosPreview = function() {
     });
     window.newPhotoFiles.forEach((file, i) => {
         const objectUrl = URL.createObjectURL(file);
+        window._activeObjectUrls.push(objectUrl); // Track for cleanup
         html += `<div class="relative w-20 h-20"><img src="${objectUrl}" class="w-full h-full object-cover rounded-lg border border-[#aac7ff]/50 opacity-80"><button onclick="removeNewPhoto(${i})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg"><span class="material-symbols-outlined text-[14px]">close</span></button></div>`;
     });
     
@@ -702,13 +1184,24 @@ window.renderPhotosPreview = function() {
 };
 
 window.submitInspection = async function() {
-    const status = document.getElementById('inspeksi-status')?.value;
-    if (!status) return alert('Silakan pilih status inspeksi terlebih dahulu.');
-    if (status !== 'Tidak Perlu Dicek' && window.existingPhotos.length === 0 && window.newPhotoFiles.length === 0) {
-        return alert('Status "Sesuai" atau "Tidak Sesuai" mewajibkan setidaknya 1 foto dokumentasi.');
+    const isSamplingTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab') === 'tab-sampling';
+    let status = document.getElementById('inspeksi-status')?.value;
+    
+    if (isSamplingTab) {
+        const rusakVal = document.getElementById('inspeksi-jumlah-rusak')?.value.trim();
+        if (rusakVal === '') return alert('Silakan isi jumlah barang rusak. (Ketik 0 jika semua barang aman/sesuai).');
+        status = parseInt(rusakVal) > 0 ? 'Tidak Sesuai' : 'Sesuai';
+        if (window.existingPhotos.length === 0 && window.newPhotoFiles.length === 0) {
+            return alert('Mohon sertakan setidaknya 1 foto dokumentasi hasil sampling.');
+        }
+    } else {
+        if (!status) return alert('Silakan pilih status inspeksi terlebih dahulu.');
+        if (status !== 'Tidak Perlu Dicek' && window.existingPhotos.length === 0 && window.newPhotoFiles.length === 0) {
+            return alert('Status "Sesuai" atau "Tidak Sesuai" mewajibkan setidaknya 1 foto dokumentasi.');
+        }
     }
 
-    const btn = document.getElementById('fab-main'); // Visual feedback on FAB if needed
+    const btn = isSamplingTab ? document.getElementById('btn-submit-sampling') : document.getElementById('fab-main'); // Visual feedback on FAB if needed
     let originalHtml = '';
     if (btn) {
         originalHtml = btn.innerHTML;
@@ -737,12 +1230,30 @@ window.submitInspection = async function() {
 
         // Update DB
         const currentProfile = window.currentProfile;
-        const updatePayload = {
+        const updatePayloadBase = {
             status_inspeksi: status,
             foto_inspeksi: JSON.stringify(allPhotoUrls),
             tanggal_inspeksi: new Date().toISOString(),
             id_staf: currentProfile?.id_number || '',
             nama_staf: currentProfile?.nama || window.currentUser?.email || ''
+        };
+        
+        const jumlahRusakInput = document.getElementById('inspeksi-jumlah-rusak');
+        let jumlahRusakVal = '';
+        if (jumlahRusakInput) {
+            const container = document.getElementById('sampling-input-container');
+            if (!container || !container.classList.contains('hidden')) {
+                jumlahRusakVal = jumlahRusakInput.value.trim();
+            }
+        }
+
+        const getNewKeterangan = (item) => {
+            let newKet = item.keterangan || '';
+            newKet = newKet.replace(/HASIL SAMPLING:\s*\d+/g, '').trim();
+            if (jumlahRusakVal) {
+                newKet += (newKet ? '\n' : '') + `HASIL SAMPLING: ${jumlahRusakVal}`;
+            }
+            return newKet.trim();
         };
 
         if (window.isBulkInspection) {
@@ -754,10 +1265,17 @@ window.submitInspection = async function() {
                 const originalIndex = selectedIndexes[i];
                 const item = window.currentItemsData[originalIndex];
                 
-                const p = supabase.from('penerimaan_kapal').update(updatePayload).eq('id', item.id);
+                const currentUpdate = { ...updatePayloadBase, keterangan: getNewKeterangan(item) };
+                
+                const p = supabase.from('penerimaan_kapal').update(currentUpdate).eq('id', item.id);
                 updatePromises.push(p);
 
-                const updatedItem = { ...item, ...updatePayload };
+                if (window.globalDataCache) {
+                    const cacheIdx = window.globalDataCache.findIndex(r => r.id === item.id);
+                    if (cacheIdx !== -1) window.globalDataCache[cacheIdx] = { ...window.globalDataCache[cacheIdx], ...currentUpdate };
+                }
+
+                const updatedItem = { ...item, ...currentUpdate };
                 setTimeout(() => window.pushToWecom(null, updatedItem, originalIndex), i * 200 + 100); 
             }
             await Promise.all(updatePromises);
@@ -766,11 +1284,31 @@ window.submitInspection = async function() {
             window.updateBulkUI();
         } else {
             // SINGLE UPDATE
-            const { error: dbError } = await supabase.from('penerimaan_kapal').update(updatePayload).eq('id', window.currentInspectionItem.id);
+            const item = window.currentInspectionItem;
+            const currentUpdate = { ...updatePayloadBase, keterangan: getNewKeterangan(item) };
+            
+            let dbError = null;
+            if (item.ids && item.ids.length > 0) {
+                const { error } = await supabase.from('penerimaan_kapal').update(currentUpdate).in('id', item.ids);
+                dbError = error;
+                if (!dbError && window.globalDataCache) {
+                    item.ids.forEach(id => {
+                        const cacheIdx = window.globalDataCache.findIndex(r => r.id === id);
+                        if (cacheIdx !== -1) window.globalDataCache[cacheIdx] = { ...window.globalDataCache[cacheIdx], ...currentUpdate };
+                    });
+                }
+            } else {
+                const { error } = await supabase.from('penerimaan_kapal').update(currentUpdate).eq('id', item.id);
+                dbError = error;
+                if (!dbError && window.globalDataCache) {
+                    const cacheIdx = window.globalDataCache.findIndex(r => r.id === item.id);
+                    if (cacheIdx !== -1) window.globalDataCache[cacheIdx] = { ...window.globalDataCache[cacheIdx], ...currentUpdate };
+                }
+            }
             if (dbError) throw dbError;
             
             // Auto push ke WeCom setelah berhasil simpan (fire and forget)
-            const updatedItem = { ...window.currentInspectionItem, ...updatePayload };
+            const updatedItem = { ...item, ...currentUpdate };
             setTimeout(() => pushToWecom(null, updatedItem), 100);
         }
 
@@ -783,8 +1321,19 @@ window.submitInspection = async function() {
 
         setTimeout(() => {
             closePanel('panel-inspection');
-            // Refresh list barang di panel sebelumnya
-            window.openContainer(currentContainer);
+            
+            // Refresh list barang berdasarkan konteks asal UI
+            const isPanelItemsVisible = !document.getElementById('panel-items').classList.contains('hidden');
+            if (isPanelItemsVisible && window.currentContainer) {
+                window.openContainer(window.currentContainer);
+            } else {
+                const activeTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab');
+                if (activeTab === 'tab-sampling') {
+                    if (typeof loadSampling === 'function') loadSampling();
+                } else if (activeTab === 'tab-armada' && window.currentShipRaw) {
+                    window.openShip(window.currentShipRaw, window.currentShipClean);
+                }
+            }
         }, 1500);
 
     } catch (e) {
@@ -793,6 +1342,74 @@ window.submitInspection = async function() {
         if (btn) {
             btn.innerHTML = originalHtml;
             btn.disabled = false;
+            btn.style.opacity = '1';
+        }
+    }
+};
+
+window.bulkSetPerluSampling = async function() {
+    if (!window.bulkSelectedItems || window.bulkSelectedItems.size === 0) return;
+    
+    const btn = document.getElementById('btn-bulk-sampling');
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span>';
+    btn.style.opacity = '0.7';
+    
+    try {
+        const currentProfile = window.currentProfile;
+        const updatePayloadBase = {
+            status_inspeksi: 'Perlu Sampling',
+            tanggal_inspeksi: new Date().toISOString(),
+            id_staf: currentProfile?.id_number || '',
+            nama_staf: currentProfile?.nama || window.currentUser?.email || ''
+        };
+        
+        const updatePromises = [];
+        const selectedIndexes = Array.from(window.bulkSelectedItems);
+        
+        for (let i = 0; i < selectedIndexes.length; i++) {
+            const originalIndex = selectedIndexes[i];
+            const item = window.currentItemsData[originalIndex];
+            
+            const currentUpdate = { ...updatePayloadBase };
+            
+            const p = supabase.from('penerimaan_kapal').update(currentUpdate).eq('id', item.id);
+            updatePromises.push(p);
+
+            if (window.globalDataCache) {
+                const cacheIdx = window.globalDataCache.findIndex(r => r.id === item.id);
+                if (cacheIdx !== -1) window.globalDataCache[cacheIdx] = { ...window.globalDataCache[cacheIdx], ...currentUpdate };
+            }
+
+            const updatedItem = { ...item, ...currentUpdate };
+            setTimeout(() => { if (typeof window.pushToWecom === 'function') window.pushToWecom(null, updatedItem, originalIndex); }, i * 200 + 100); 
+        }
+        await Promise.all(updatePromises);
+        
+        window.bulkSelectedItems.clear();
+        window.updateBulkUI();
+        
+        // Refresh the current items list
+        setTimeout(() => {
+            const isPanelItemsVisible = !document.getElementById('panel-items').classList.contains('hidden');
+            if (isPanelItemsVisible && window.currentContainer) {
+                window.openContainer(window.currentContainer);
+            } else {
+                const activeTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab');
+                if (activeTab === 'tab-sampling') {
+                    if (typeof loadSampling === 'function') loadSampling();
+                } else if (activeTab === 'tab-armada' && window.currentShipRaw) {
+                    window.openShip(window.currentShipRaw, window.currentShipClean);
+                }
+            }
+        }, 300);
+        
+    } catch(err) {
+        console.error(err);
+        alert('Gagal set Perlu Sampling: ' + err.message);
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalHtml;
             btn.style.opacity = '1';
         }
     }
@@ -863,7 +1480,7 @@ function loadProfileUI() {
     const themeColor = isLight ? 'text-indigo-400' : 'text-yellow-500';
     const themeText = isLight ? 'Mode Gelap' : 'Mode Terang';
 
-    el.innerHTML = `<div class="flex flex-col gap-5 pb-8">
+    el.innerHTML = `<div class="flex flex-col gap-5 pb-[120px]">
 <div class="flex flex-col items-center gap-3 pt-4 pb-2">
 <div class="w-24 h-24 rounded-full border-2 border-white/20 flex items-center justify-center overflow-hidden shrink-0" style="background:rgba(170,199,255,0.1)">${avatar?`<img src="${avatar}" class="w-full h-full object-cover">`:'<span class="material-symbols-outlined text-[50px] text-[#aac7ff]">person</span>'}</div>
 <div class="text-center"><p class="text-white font-bold text-[20px]">${nama}</p><p class="text-white/50 text-[13px] mt-1">ID: ${idNum} | ${role}</p></div>
@@ -873,11 +1490,27 @@ function loadProfileUI() {
 <div class="h-px bg-white/5 mx-4"></div>
 <button class="w-full flex items-center gap-4 p-4 active:bg-white/5 transition-colors" onclick="showChangePasswordDialog()"><span class="material-symbols-outlined text-blue-300">lock_outline</span><span class="text-white font-semibold text-[14px] flex-1 text-left">Ganti Password</span><span class="material-symbols-outlined text-white/30">chevron_right</span></button>
 <div class="h-px bg-white/5 mx-4"></div>
+<button class="w-full flex items-center gap-4 p-4 active:bg-white/5 transition-colors" onclick="linkGoogleAccount()"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"><span class="text-white font-semibold text-[14px] flex-1 text-left">Tautkan Akun Google</span><span class="material-symbols-outlined text-white/30">chevron_right</span></button>
+<div class="h-px bg-white/5 mx-4"></div>
 <button class="w-full flex items-center gap-4 p-4 active:bg-white/5 transition-colors" onclick="toggleTheme()"><span class="material-symbols-outlined ${themeColor}" id="theme-icon">${themeIcon}</span><span class="text-white font-semibold text-[14px] flex-1 text-left" id="theme-text">${themeText}</span><span class="material-symbols-outlined text-white/30">chevron_right</span></button>
 </div>
 <div class="glass-card overflow-hidden"><button class="w-full flex items-center gap-4 p-4 active:bg-white/5 transition-colors" onclick="handleLogout()"><span class="material-symbols-outlined" style="color:#f87171">logout</span><span class="font-bold text-[14px]" style="color:#f87171">Keluar</span></button></div>
 </div>`;
 }
+
+window.linkGoogleAccount = async function() {
+    try {
+        const { data, error } = await supabase.auth.linkIdentity({
+            provider: 'google',
+            options: { redirectTo: window.location.origin + '/staff.html' }
+        });
+        if (error) throw error;
+        alert("Proses menautkan akun Google dimulai. Anda akan dialihkan...");
+    } catch (e) {
+        console.error(e);
+        alert("Gagal menautkan akun Google: " + e.message);
+    }
+};
 
 window.toggleTheme = function() {
     const htmlEl = document.documentElement;
@@ -981,6 +1614,7 @@ window.openBulkInspection = function() {
                 <option value="" disabled selected>Pilih Status...</option>
                 <option value="Sesuai">Sesuai / 合格</option>
                 <option value="Tidak Sesuai">Tidak Sesuai / 不合格</option>
+                <option value="Perlu Sampling">Perlu Sampling</option>
             </select>
             <span class="material-symbols-outlined absolute right-4 top-4 text-white/50 pointer-events-none">expand_more</span>
         </div>
@@ -991,6 +1625,7 @@ window.openBulkInspection = function() {
         <!-- Menu Items (hidden by default) -->
         <div id="speed-dial-menu" class="hidden flex-col items-end gap-4 mb-4 transition-all">
             
+
             <button onclick="setSkipItem()" class="flex items-center gap-4 active:scale-95 transition-transform">
                 <span class="bg-[#2A2D36] text-white/80 px-4 py-2 rounded-lg text-[14px] font-medium shadow-md">skip_item</span>
                 <div class="w-12 h-12 rounded-full bg-[#FCD34D] text-black flex items-center justify-center shadow-lg"><span class="material-symbols-outlined text-[24px]">block</span></div>
